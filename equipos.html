@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="icon" type="image/png" href="resources\icon-512x512.png">
+  <title>Equipos - Equipapp</title>
+</head>
+
+<body>
+  <div id="equipo1">
+    <p>Equipo 1:</p>
+    <select id="colorEquipo1">
+      <option value="">Seleccionar Color</option>
+      <option value="Blanco">Blanco</option>
+      <option value="Negro">Negro</option>
+      <option value="Rojo">Rojo</option>
+      <option value="Azul">Azul</option>
+      <option value="Verde">Verde</option>
+    </select>
+    <br><br>
+    <p id="jugadoresEquipo1"></p>
+  </div>
+  <div id="equipo2">
+    <p>Equipo 2:</p>
+    <select id="colorEquipo2">
+      <option value="">Seleccionar Color</option>
+      <option value="Blanco">Blanco</option>
+      <option value="Negro">Negro</option>
+      <option value="Rojo">Rojo</option>
+      <option value="Azul">Azul</option>
+      <option value="Verde">Verde</option>
+    </select>
+    <br><br>
+    <p id="jugadoresEquipo2"></p>
+  </div>
+  <button id="share">Enviar por WhatsApp</button>
+  <button id="clear">Volver</button><br><br>
+
+  <script>
+    // Mostrar los equipos en la página de equipos
+    window.onload = function () {
+      const equipo1 = JSON.parse(localStorage.getItem("equipo1"));
+      const equipo2 = JSON.parse(localStorage.getItem("equipo2"));
+      document.getElementById("jugadoresEquipo1").innerHTML = equipo1.join("<br>");
+      document.getElementById("jugadoresEquipo2").innerHTML = equipo2.join("<br>");
+    };
+
+    const colorEquipo1 = { color: "" };
+    const colorEquipo2 = { color: "" };
+    document.getElementById("colorEquipo1").addEventListener("change", function (event) {
+      localStorage.setItem("colorEquipo1", event.target.value);
+    });
+
+    document.getElementById("colorEquipo2").addEventListener("change", function (event) {
+      localStorage.setItem("colorEquipo2", event.target.value);
+    });
+
+    document.getElementById("clear").addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+
+    document.getElementById("share").addEventListener("click", function () {
+      const equipo1 = JSON.parse(localStorage.getItem("equipo1"));
+      const equipo2 = JSON.parse(localStorage.getItem("equipo2"));
+
+      const colorEquipo1 = [localStorage.getItem("colorEquipo1")];
+      const colorEquipo2 = [localStorage.getItem("colorEquipo2")];
+
+      if (colorEquipo1.toString() === "" || colorEquipo2.toString() === "") {
+  alert("Por favor, seleccione un color para cada equipo.");
+  return;
+}
+
+if (colorEquipo1.toString() === colorEquipo2.toString()) {
+  alert("Los colores de los equipos no pueden ser iguales. Por favor, seleccione colores diferentes para cada equipo.");
+  return;
+}
+
+
+
+      let message = "Equipo 1 (" + colorEquipo1 + "):\n";
+message += equipo1.toString().replace(/,/g, '\n');
+message += "\nEquipo 2 (" + colorEquipo2 + "):\n";
+message += equipo2.toString().replace(/,/g, '\n');
+
+      const encodedMessage = encodeURIComponent(message);
+      window.open("https://api.whatsapp.com/send?text=" + encodedMessage, "_blank");
+    });
+
+
+    document.getElementById("equipo1").innerHTML = "Equipo 1:<br><select id='selectEquipo1'><option value='Seleccionar Color'>Seleccionar Color</option><option value='Blanco'>Blanco</option><option value='Negro'>Negro</option><option value='Rojo'>Rojo</option><option value='Azul'>Azul</option><option value='Verde'>Verde</option></select><br>" + equipo1.join("<br>");
+    document.getElementById("equipo2").innerHTML = "Equipo 2: <br><select id='selectEquipo2'><option value='Seleccionar Color'>Seleccionar Color</option><option value='Blanco'>Blanco</option><option value='Negro'>Negro</option><option value='Rojo'>Rojo</option><option value='Azul'>Azul</option><option value='Verde'>Verde</option></select><br>" + equipo2.join("<br>");
+
+    document.getElementById("selectEquipo1").addEventListener("change", function () {
+      const color = document.getElementById("selectEquipo1").value;
+      if (color !== "Seleccionar Color") {
+        localStorage.setItem("colorEquipo1", color);
+        document.getElementById("selectEquipo1").disabled = true;
+      }
+    });
+
+    document.getElementById("selectEquipo2").addEventListener("change", function () {
+      const color = document.getElementById("selectEquipo2").value;
+      if (color !== "Seleccionar Color") {
+        localStorage.setItem("colorEquipo2", color);
+        document.getElementById("selectEquipo2").disabled = true;
+      }
+    });
+
+  </script>
+</body>
+
+</html>
