@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="icon" type="image/png" href="src/icon.svg" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#1a1919" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Equipapp</title>
+  </head>
+
+  <body class="bg-slate-500 min-h-screen flex items-center justify-center">
+    <div
+      class="absolute inset-0 flex items-center justify-center opacity-10 z-0"
+    >
+      <img
+        src="src/icon.svg"
+        alt="Logo de fondo"
+        class="w-1/2"
+        width="300"
+        height="200"
+      />
+    </div>
+    <div class="container px-4 py-10 w-full md:w-1/4 z-10">
+      <div
+        id="team1"
+        class="text-center text-gray-100 mb-4"
+        style="display: none; max-width: 100%"
+      >
+        <p class="font-semibold text-xl tracking-wide mb-2">EQUIPO 1: NEGRO</p>
+        <p
+          id="jugadoresEquipo1"
+          class="text-lg leading-relaxed"
+          style="word-wrap: break-word"
+        ></p>
+      </div>
+      <div
+        id="team2"
+        class="text-center text-gray-100 mb-4"
+        style="display: none; max-width: 100%"
+      >
+        <p class="font-semibold text-xl tracking-wide mb-2">EQUIPO 2: BLANCO</p>
+        <p
+          id="jugadoresEquipo2"
+          class="text-lg leading-relaxed"
+          style="word-wrap: break-word"
+        ></p>
+      </div>
+      <div class="flex justify-center mb-4">
+        <button
+          id="sortearEquipos"
+          class="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Volver a Sortear
+        </button>
+      </div>
+      <div
+        class="flex gap-4 mb-4 justify-center"
+        style="display: none"
+        id="additionalButtons"
+      >
+        <button id="back" class="bg-blue-500 text-white px-4 py-2 rounded">
+          Atras
+        </button>
+        <button id="copyTeams" class="bg-blue-500 text-white px-4 py-2 rounded">
+          Copiar
+        </button>
+        <button id="shareWsp" class="bg-blue-500 text-white px-4 py-2 rounded">
+          Enviar
+        </button>
+      </div>
+      <div
+        id="notification"
+        class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-800 text-white px-4 py-2 rounded shadow-lg"
+      >
+        Copiado al portapapeles
+      </div>
+    </div>
+  </body>
+
+  <script src="sortTeams.js"></script>
+  <script>
+    document
+      .getElementById("sortearEquipos")
+      .addEventListener("click", function () {
+        updateTeams();
+      });
+      function updateTeams() {
+  sortTeams();
+
+  const equipo1 = JSON.parse(localStorage.getItem("equipo1"));
+  const equipo2 = JSON.parse(localStorage.getItem("equipo2"));
+
+  const jugadoresEquipo1 = document.getElementById("jugadoresEquipo1");
+  const jugadoresEquipo2 = document.getElementById("jugadoresEquipo2");
+
+  // Determinar el tamaño del equipo
+  const totalJugadores = equipo1.length + equipo2.length;
+  const jugadoresPorEquipo = totalJugadores / 2;
+
+  // Asignar jugadores a los equipos según el tamaño del equipo
+  const equipo1Jugadores = equipo1.slice(0, jugadoresPorEquipo);
+  const equipo2Jugadores = equipo2.slice(0, jugadoresPorEquipo);
+
+  if (jugadoresPorEquipo === 5 || jugadoresPorEquipo === 7) {
+    jugadoresEquipo1.innerText = equipo1Jugadores
+      .filter((p) => p !== null)
+      .map((p) => `${p.name}`)
+      .join("\n");
+    jugadoresEquipo2.innerText = equipo2Jugadores
+      .filter((p) => p !== null)
+      .map((p) => `${p.name}`)
+      .join("\n");
+  } else {
+    jugadoresEquipo1.innerText = equipo1Jugadores
+      .filter((p) => p !== null)
+      .map((p) => `${p.name} (${p.position})`)
+      .join("\n");
+    jugadoresEquipo2.innerText = equipo2Jugadores
+      .filter((p) => p !== null)
+      .map((p) => `${p.name} (${p.position})`)
+      .join("\n");
+  }
+
+  // Ocultar el mensaje y mostrar los equipos
+  document.getElementById("team1").style.display = "block";
+  document.getElementById("team2").style.display = "block";
+  document.getElementById("additionalButtons").style.display = "flex";
+}
+
+
+    window.onload = function () {
+      updateTeams();
+    };
+
+    document.getElementById("shareWsp").addEventListener("click", function () {
+  const equipo1 = JSON.parse(localStorage.getItem("equipo1"));
+  const equipo2 = JSON.parse(localStorage.getItem("equipo2"));
+
+  let message = "EQUIPO 1 - NEGRO: \n";
+  message += equipo1
+    .map((p) => (p.position ? `${p.name} (${p.position})` : p.name))
+    .join("\n");
+  message += "\n\nEQUIPO 2 - BLANCO:\n";
+  message += equipo2
+    .map((p) => (p.position ? `${p.name} (${p.position})` : p.name))
+    .join("\n");
+
+  const encodedMessage = encodeURIComponent(message);
+  window.open(
+    "https://api.whatsapp.com/send?text=" + encodedMessage,
+    "_blank"
+  );
+});
+
+    document.getElementById("copyTeams").addEventListener("click", function () {
+      const equipo1 = document.getElementById("team1").innerText;
+      const equipo2 = document.getElementById("team2").innerText;
+      const textToCopy = equipo1 + "\n\n" + equipo2 + "\n";
+
+      navigator.clipboard.writeText(textToCopy).then(
+        () => {
+          // Muestra la notificación
+          const notification = document.getElementById("notification");
+          notification.classList.remove("hidden");
+
+          // Oculta la notificación después de 2 segundos
+          setTimeout(() => {
+            notification.classList.add("hidden");
+          }, 700);
+        },
+        (err) => {
+          console.error("Error al copiar el texto: ", err);
+        }
+      );
+    });
+
+// Agregar un evento de clic al botón "Volver"
+const volverButton = document.getElementById("back");
+volverButton.addEventListener("click", function () {
+  const players = JSON.parse(localStorage.getItem("players"));
+
+  if (players.length === 10 || players.length === 14) {
+    window.location.href = "index.html";
+  } else {
+    window.location.href = "armar.html";
+  }
+});
+
+  </script>
+</html>

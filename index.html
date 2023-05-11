@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="src/icon.svg" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="src/styles.css" />
+    <meta name="theme-color" content="#1a1919" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Equipapp</title>
+  </head>
+
+  <body
+    class="bg-slate-500 min-h-screen flex items-center justify-center"
+  >
+      <div class="container px-4 py-10 w-full md:w-1/4">
+        <img
+          src="src/logo.png"
+          alt="Logo"
+          width="300"
+          height="200"
+          class="w-full"
+        />
+      <form>
+        <div class="mb-3">
+          <div class="text-center">
+            <label for="players" class="form-label text-gray-100 text-lg mb-4">
+              Ingresar jugadores
+              <span class="relative inline-block cursor-pointer">
+                <i
+                  id="info-icon"
+                  class="material-icons text-gray-100 text-sm cursor-pointer"
+                  >info</i
+                >
+                <div
+                  id="info-tooltip"
+                  class="hidden absolute bg-gray-100 text-gray-800 text-sm px-2 py-1 rounded shadow-lg two-lines right-1/2 transform translate-x-1/2 -bottom-full"
+                  style="margin-bottom: 55px"
+                >
+                  Si le agregas el emoji de los guantes (🧤) a quienes van a ser
+                  arqueros, aparecerán seleccionados automáticamente. (Solo en 8v8)
+                </div> </span>:
+            </label>
+          </div>
+          <div class="flex justify-center mb-6">
+            <label
+              for="players"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            ></label>
+            <textarea
+              oninput="adjustHeight(this)"
+              id="players"
+              style="resize: inherit"
+              placeholder="Ingresa los nombres línea por línea"
+              class="block w-full p-4 mt-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            ></textarea>
+          </div>
+        </div>
+        <div class="flex justify-center">
+          <button
+            type="button"
+            class="bg-blue-500 text-white px-4 py-2 rounded"
+            onclick="generatePlayers()"
+          >
+            Siguiente
+          </button>
+      </form>
+    </div>
+
+    <script src="./app.js"></script>
+
+    <script>
+      function adjustHeight(textarea) {
+        textarea.style.height = "auto";
+        textarea.style.height = textarea.scrollHeight + "px";
+      }
+    </script>
+
+    <script>
+      const infoIcon = document.getElementById("info-icon");
+      const infoTooltip = document.getElementById("info-tooltip");
+
+      const isMobile = window.matchMedia("(hover: none)").matches;
+
+      if (!isMobile) {
+        infoIcon.addEventListener("mouseenter", function () {
+          infoTooltip.classList.remove("hidden");
+        });
+
+        infoIcon.addEventListener("mouseleave", function () {
+          infoTooltip.classList.add("hidden");
+        });
+      } else {
+        infoIcon.addEventListener("touchstart", function (event) {
+          infoTooltip.classList.toggle("hidden");
+          event.stopPropagation();
+        });
+
+        document.addEventListener("touchstart", function (event) {
+          if (
+            event.target !== infoIcon &&
+            !infoTooltip.classList.contains("hidden")
+          ) {
+            infoTooltip.classList.add("hidden");
+          }
+        });
+
+        // Detener la propagación del evento al hacer clic en el área de información
+        infoTooltip.addEventListener("touchstart", function (event) {
+          event.stopPropagation();
+        });
+      }
+    </script>
+
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-analytics.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyB1nWNAEnO7YS15FkbQ8EvdO-NF1nBAvDQ",
+        authDomain: "armar-equipos.firebaseapp.com",
+        projectId: "armar-equipos",
+        storageBucket: "armar-equipos.appspot.com",
+        messagingSenderId: "203268635400",
+        appId: "1:203268635400:web:b9b68f1b9461e9e2e6cabd",
+        measurementId: "G-885E09YFN4",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+    </script>
+  </body>
+</html>
