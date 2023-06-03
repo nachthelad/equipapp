@@ -6,10 +6,12 @@ function shuffle(array) {
 }
 
 function getTeamSize(playerCount) {
-  if (playerCount >= 16) return 8;
-  if (playerCount >= 14) return 7;
-  return 5;
+  if (playerCount === 10) return 5;
+  if (playerCount === 14) return 7;
+  if (playerCount === 16) return 8;
+  throw new Error("La cantidad de jugadores debe ser 10, 14 o 16");
 }
+
 
 function sortTeams() {
   const players = JSON.parse(localStorage.getItem("players"));
@@ -17,8 +19,8 @@ function sortTeams() {
   shuffle(players);
 
   if (teamSize === 5 || teamSize === 7) {
-    const equipo1 = [];
-    const equipo2 = [];
+    let equipo1 = [];
+    let equipo2 = [];
 
     for (let i = 0; i < players.length; i++) {
       if (i % 2 === 0) {

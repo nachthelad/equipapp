@@ -19,8 +19,8 @@ function generatePlayers() {
   });
 
   // Comprobar que haya al menos 10 jugadores
-  if (cleanedLines.length < 10) {
-    alert("Debe haber al menos 10 jugadores.");
+  if (cleanedLines.length !== 10 && cleanedLines.length !== 14 && cleanedLines.length !== 16) {
+    alert("La cantidad de jugadores debe ser 10, 14 o 16");
     return;
   }
 
