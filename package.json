@@ -1,5 +1,18 @@
 {
   "dependencies": {
-    "firebase": "^9.19.1"
-  }
+    "firebase": "^9.23.0",
+    "protobufjs": "^7.2.4"
+  },
+  "name": "equipapp",
+  "version": "1.0.0",
+  "description": "Arma los equipos de futbol",
+  "main": ".app_original.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "equipapp"
+  ],
+  "author": "Ignacio Ventura",
+  "license": "ISC"
 }
