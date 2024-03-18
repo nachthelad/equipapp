@@ -1,19 +1,13 @@
 import { useState } from "react";
-import {
-  Button,
-  IconButton,
-  Tooltip,
-  Grid,
-} from "@mui/material";
+import { Button, IconButton, Tooltip, Grid } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
-import Image from "next/image";
 import CustomTextField from "./CustomTextField";
 
-interface PlayerFormProps {
-  onSubmit: (players: string[]) => void;
-}
+type PlayerFormProps = {
+  onNextStep: any;
+};
 
-const PlayerForm: React.FC<PlayerFormProps> = ({ onSubmit }) => {
+export default function PlayerForm({ onNextStep }: PlayerFormProps) {
   const [players, setPlayers] = useState("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -23,15 +17,21 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ onSubmit }) => {
       .split(/\r?\n/)
       .filter((line) => line.trim() !== "");
 
-    const cleanedLines = playerNames.map((line)=> {
-        let cleanedLine = line.replace(/[^a-zA-Z0-9\s🧤]|(?<![a-zA-Z\s])\d+/g, "")
-        .trim();
-        return cleanedLine.replace(/\b\w/g, (char) => char.toUpperCase());
+    const cleanedLines = playerNames.map((line) => {
+      let cleanedLine = line
+        .replace(/[^a-zA-Z0-9\s🧤áéíóúÁÉÍÓÚ]|(?<![a-zA-Z\sáéíóúÁÉÍÓÚ])\d+/g, "")
+        .trim()
+        .toLowerCase();
+      return cleanedLine.replace(/(^\w|\s\w|🧤\w)/g, (char) =>
+        char.toUpperCase()
+      );
     });
 
     if (validatePlayerCount(cleanedLines)) {
-      onSubmit(cleanedLines);
+      console.log(cleanedLines);
+      setPlayers("");
       alert("Todo ok");
+      onNextStep(); // Move to the next step
     } else {
       alert("La cantidad de jugadores debe ser 10, 14 o 16");
     }
@@ -51,9 +51,6 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ onSubmit }) => {
     <form onSubmit={handleSubmit}>
       <Grid container direction="column" spacing={2} alignItems="center">
         <Grid item>
-          <Image src="/logo.png" alt="Logo" width={330} height={200} />
-        </Grid>
-        <Grid item>
           <Tooltip title="Sugerencia" placement="top">
             <IconButton onClick={handleInfoClick}>
               <InfoIcon sx={{ color: "white" }} />
@@ -69,6 +66,4 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ onSubmit }) => {
       </Grid>
     </form>
   );
-};
-
-export default PlayerForm;
+}

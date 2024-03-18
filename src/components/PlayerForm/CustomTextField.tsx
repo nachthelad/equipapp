@@ -1,4 +1,4 @@
-import { SetStateAction, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { TextField } from "@mui/material";
 import styled from "styled-components";
 
@@ -32,7 +32,10 @@ interface CustomTextFieldProps {
   onChange: (value: string) => void;
 }
 
-const CustomTextField: React.FC<CustomTextFieldProps> = ({ value, onChange }) => {
+const CustomTextField: React.FC<CustomTextFieldProps> = ({
+  value,
+  onChange,
+}) => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -58,6 +61,7 @@ const CustomTextField: React.FC<CustomTextFieldProps> = ({ value, onChange }) =>
       value={value}
       onChange={handleChange}
       inputRef={textAreaRef}
+      autoFocus
     />
   );
 };
