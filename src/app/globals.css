@@ -100,3 +100,7 @@ a {
     color-scheme: dark;
   }
 }
+
+.actionButton {
+  border-radius: 20px !important;
+}

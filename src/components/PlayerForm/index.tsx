@@ -3,12 +3,12 @@ import {
   Button,
   IconButton,
   Tooltip,
-  Grid,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
+  Box,
 } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 import CustomTextField from "./CustomTextField";
@@ -40,7 +40,6 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
     });
 
     if (validatePlayerCount(cleanedLines)) {
-      console.log(cleanedLines);
       onFormSubmit(cleanedLines);
       setCleanedLines(cleanedLines);
     } else {
@@ -64,12 +63,16 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>{"Sugerencia"}</DialogTitle>
       <DialogContent>
-        <DialogContentText>
+        <DialogContentText sx={{ color: "black" }}>
           Si le agregas el emoji de los guantes (🧤) a quienes van a ser
           arqueros, van a aparecer seleccionados como arqueros automáticamente.
         </DialogContentText>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button
+            className="actionButton"
+            variant="contained"
+            onClick={handleClose}
+            color="primary">
             Cerrar
           </Button>
         </DialogActions>
@@ -80,21 +83,40 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       {infoDialog}
-      <Grid container direction="column" spacing={2} alignItems="center">
-        <Grid item sx={{ paddingLeft: "0 !important" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          flexDirection: "column",
+          alignItems: "center",
+        }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+          }}>
           <Tooltip title="Sugerencia" placement="top">
             <IconButton onClick={handleInfoClick}>
               <InfoIcon sx={{ color: "white" }} />
             </IconButton>
           </Tooltip>
-        </Grid>
+        </Box>
         <CustomTextField value={players} onChange={setPlayers} />
-        <Grid item>
-          <Button type="submit" variant="contained" color="primary">
+        <Box
+          sx={{
+            paddingY: "1rem",
+            display: "flex",
+            justifyContent: "center",
+          }}>
+          <Button
+            className="actionButton"
+            type="submit"
+            variant="contained"
+            color="primary">
             Siguiente
           </Button>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </form>
   );
 }
