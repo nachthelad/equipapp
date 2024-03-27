@@ -22,7 +22,7 @@ const StyledTextField = styled(TextField)`
   & textarea {
     resize: none;
     color: white;
-    width: 25rem;
+    width: 20rem;
     margin: 0;
   }
 `;

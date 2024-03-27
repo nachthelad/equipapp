@@ -1,41 +1,51 @@
 "use client";
 import React, { useState } from "react";
-import Image from "next/image";
 import { Grid } from "@mui/material";
+import Image from "next/image";
 import PlayerForm from "@/components/PlayerForm";
-import PositionSelection from "../PositionSelection";
+import PositionSelection from "@/components/PositionSelection";
 import Teams from "@/components/Teams";
 
 export default function MainPage() {
-  const [step, setStep] = useState(1); // Initialize step state
+  const [step, setStep] = useState(1);
+  const [playerNames, setPlayerNames] = useState<string[]>([]);
 
-  // Function to handle moving to the next step
-  const nextStep = () => {
-    setStep(step + 1);
+  const handleFormSubmit = (names: string[]) => {
+    setPlayerNames(names);
+    setStep(2); // Avanza al siguiente paso después de enviar el formulario
   };
 
-  // Render different components based on the current step
-  const renderStep = () => {
-    switch (step) {
-      case 1:
-        return <PlayerForm onNextStep={nextStep} />;
-      case 2:
-        return <PositionSelection onNextStep={nextStep} />;
-      case 3:
-        return <Teams />;
-      default:
-        return null;
-    }
+  const handlePositionSelection = () => {
+    setStep(3); // Avanza después de la selección de posiciones
   };
 
   return (
-    <>
-      <Grid container direction="column" spacing={1} alignItems="center">
-        <Grid item>
-          <Image src="/logo.png" alt="Logo" width={330} height={200} />
-        </Grid>
-        <Grid item>{renderStep()}</Grid>
+    <Grid
+      container
+      direction="column"
+      spacing={2}
+      alignItems="center"
+      xs={12}
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        "@media (max-width: 600px)": {
+          justifyContent: "center",
+        },
+      }}>
+      <Grid item>
+        <Image src="/logo.png" alt="Logo Equipapp" width={330} height={200} />
       </Grid>
-    </>
+      <Grid item>
+        {step === 1 && <PlayerForm onFormSubmit={handleFormSubmit} />}
+        {step === 2 && (
+          <PositionSelection
+            playerNames={playerNames}
+            onPositionSelection={handlePositionSelection}
+          />
+        )}
+        {step === 3 && <Teams playerNames={playerNames} />}
+      </Grid>
+    </Grid>
   );
 }

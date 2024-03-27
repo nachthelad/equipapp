@@ -1,14 +1,26 @@
 import { useState } from "react";
-import { Button, IconButton, Tooltip, Grid } from "@mui/material";
+import {
+  Button,
+  IconButton,
+  Tooltip,
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 import CustomTextField from "./CustomTextField";
 
 type PlayerFormProps = {
-  onNextStep: any;
+  onFormSubmit: (playerNames: string[]) => void; // Change the type of the function
 };
 
-export default function PlayerForm({ onNextStep }: PlayerFormProps) {
+export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   const [players, setPlayers] = useState("");
+  const [open, setOpen] = useState(false);
+  const [_cleanedLines, setCleanedLines] = useState<string[]>([]); // Add state for cleaned lines
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,28 +41,47 @@ export default function PlayerForm({ onNextStep }: PlayerFormProps) {
 
     if (validatePlayerCount(cleanedLines)) {
       console.log(cleanedLines);
-      setPlayers("");
-      alert("Todo ok");
-      onNextStep(); // Move to the next step
+      onFormSubmit(cleanedLines);
+      setCleanedLines(cleanedLines);
     } else {
-      alert("La cantidad de jugadores debe ser 10, 14 o 16");
+      alert("La cantidad de jugadores debe ser 8, 10, 14 o 16");
     }
   };
 
   function validatePlayerCount(cleanedLines: string[]): boolean {
-    return [10, 14, 16].includes(cleanedLines.length);
+    return [8, 10, 14, 16].includes(cleanedLines.length);
   }
 
   const handleInfoClick = () => {
-    alert(
-      "Si le agregas el emoji de los guantes (🧤) a quienes van a ser arqueros, aparecerán seleccionados como arqueros automáticamente. (Solo en 8v8)"
-    );
+    setOpen(true);
   };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const infoDialog = (
+    <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>{"Sugerencia"}</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Si le agregas el emoji de los guantes (🧤) a quienes van a ser
+          arqueros, van a aparecer seleccionados como arqueros automáticamente.
+        </DialogContentText>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cerrar
+          </Button>
+        </DialogActions>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <form onSubmit={handleSubmit}>
+      {infoDialog}
       <Grid container direction="column" spacing={2} alignItems="center">
-        <Grid item>
+        <Grid item sx={{ paddingLeft: "0 !important" }}>
           <Tooltip title="Sugerencia" placement="top">
             <IconButton onClick={handleInfoClick}>
               <InfoIcon sx={{ color: "white" }} />
