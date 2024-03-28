@@ -1,16 +1,14 @@
 import { useState } from "react";
 import {
   Button,
-  IconButton,
-  Tooltip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
   Box,
+  Typography,
 } from "@mui/material";
-import InfoIcon from "@mui/icons-material/Info";
 import CustomTextField from "./CustomTextField";
 
 type PlayerFormProps = {
@@ -61,11 +59,17 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
 
   const infoDialog = (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>{"Sugerencia"}</DialogTitle>
+      <DialogTitle>{"¿Cómo usar?"}</DialogTitle>
       <DialogContent>
         <DialogContentText sx={{ color: "black" }}>
-          Si le agregas el emoji de los guantes (🧤) a quienes van a ser
-          arqueros, van a aparecer seleccionados como arqueros automáticamente.
+          ➡️ Ponele el emoji de los guantes (🧤) a quienes van a ser arqueros
+          para que aparezcan seleccionados automáticamente.
+        </DialogContentText>
+        <DialogContentText sx={{ color: "black" }}>
+          ➡️ Podés agregar 8, 10, 14 o 16 nombres línea por línea.
+        </DialogContentText>
+        <DialogContentText sx={{ color: "black" }}>
+          ➡️ Sólo en los partidos de 16 personas se puede elegir las posiciones.
         </DialogContentText>
         <DialogActions>
           <Button
@@ -95,11 +99,22 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
             display: "flex",
             justifyContent: "center",
           }}>
-          <Tooltip title="Sugerencia" placement="top">
-            <IconButton onClick={handleInfoClick}>
-              <InfoIcon sx={{ color: "white" }} />
-            </IconButton>
-          </Tooltip>
+          <Button
+            onClick={handleInfoClick}
+            variant="contained"
+            className="actionButton"
+            sx={{
+              marginTop: 2,
+              marginBottom: 1,
+              display: "flex",
+              alignContent: "flex-start",
+              backgroundColor: "gray",
+              "&:hover": {
+                backgroundColor: "gray",
+              },
+            }}>
+            <Typography variant="caption">¿Cómo usar?</Typography>{" "}
+          </Button>
         </Box>
         <CustomTextField value={players} onChange={setPlayers} />
         <Box
