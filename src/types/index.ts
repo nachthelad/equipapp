@@ -1,4 +1,4 @@
-export type PlayerPosition = "Arco" | "Def" | "Medio" | "Del";
+export type PlayerPosition = "Arco" | "Def" | "Medio" | "Del" | "Jugador";
 
 export type PlayerWithPosition = {
   name: string;

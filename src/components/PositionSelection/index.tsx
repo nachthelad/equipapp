@@ -52,14 +52,14 @@ export default function PositionSelection({
       (player) => player.position === "Arco"
     ).length;
 
-    if (numberOfDefenders < 6 || numberOfDefenders > 6) {
+    if (numberOfDefenders !== 6) {
       setSnackbarMessage("Debe haber 6 defensores seleccionados.");
       setOpenSnackbar(true);
       return;
     }
 
-    if (numberOfGoalkeepers > 2 || numberOfGoalkeepers < 2) {
-      setSnackbarMessage("Solo puede haber 2 arqueros seleccionados.");
+    if (numberOfGoalkeepers !== 2) {
+      setSnackbarMessage("Debe haber 2 arqueros seleccionados.");
       setOpenSnackbar(true);
       return;
     }
@@ -164,7 +164,7 @@ export default function PositionSelection({
       </Box>
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}>
         <Alert
           onClose={handleCloseSnackbar}
