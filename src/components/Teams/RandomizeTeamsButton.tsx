@@ -31,38 +31,34 @@ const RandomizeTeamsButton: React.FC<RandomizeTeamsProps> = ({
     const forwards = shuffledPlayers.filter(
       (player) => player.position === "Del"
     );
-    const player = shuffledPlayers.filter(
+    const players = shuffledPlayers.filter(
       (player) => player.position === "Jugador"
     );
+
+    const positionOrder = ["Arco", "Def", "Medio", "Del", "Jugador"];
+
+    const comparePositions = (a: PlayerWithPosition, b: PlayerWithPosition) => {
+      return (
+        positionOrder.indexOf(a.position) - positionOrder.indexOf(b.position)
+      );
+    };
 
     let newTeamOne: PlayerWithPosition[] = [];
     let newTeamTwo: PlayerWithPosition[] = [];
 
-    if (goalkeepers.length >= 2) {
-      newTeamOne.push(goalkeepers[0]);
-      newTeamTwo.push(goalkeepers[1]);
-    }
+    [
+      ...goalkeepers,
+      ...defenders,
+      ...midfielders,
+      ...forwards,
+      ...players,
+    ].forEach((player, index) => {
+      if (index % 2 === 0) newTeamOne.push(player);
+      else newTeamTwo.push(player);
+    });
 
-    const halfPlayers = Math.ceil(player.length / 2);
-
-    newTeamOne = newTeamOne.concat(player.slice(0, halfPlayers));
-    newTeamTwo = newTeamTwo.concat(player.slice(halfPlayers));
-
-    const halfDefenders = Math.ceil(defenders.length / 2);
-    const halfMidfielders = Math.ceil(midfielders.length / 2);
-    const halfForwards = Math.ceil(forwards.length / 2);
-
-    newTeamOne = newTeamOne.concat(defenders.slice(0, halfDefenders));
-    newTeamTwo = newTeamTwo.concat(defenders.slice(halfDefenders));
-
-    newTeamOne = newTeamOne.concat(midfielders.slice(0, halfMidfielders));
-    newTeamTwo = newTeamTwo.concat(midfielders.slice(halfMidfielders));
-
-    newTeamOne = newTeamOne.concat(forwards.slice(0, halfForwards));
-    newTeamTwo = newTeamTwo.concat(forwards.slice(halfForwards));
-
-    newTeamOne.sort((a, b) => a.position.localeCompare(b.position));
-    newTeamTwo.sort((a, b) => a.position.localeCompare(b.position));
+    newTeamOne.sort(comparePositions);
+    newTeamTwo.sort(comparePositions);
 
     setTeamOne(newTeamOne);
     setTeamTwo(newTeamTwo);
@@ -73,7 +69,7 @@ const RandomizeTeamsButton: React.FC<RandomizeTeamsProps> = ({
       variant="contained"
       color="primary"
       onClick={reorganizeTeams}
-      sx={{ borderRadius: "20px" }}>
+      sx={{ borderRadius: "20px", marginTop: 3, marginBottom: 2 }}>
       Volver a sortear
     </Button>
   );

@@ -23,7 +23,6 @@ export default function MainPage() {
     const otherPlayers = names.filter((name) => !name.includes("🧤"));
 
     if (goalkeepers.length === 1) {
-      // Si hay exactamente un arquero, muestra un error.
       setSnackbarMessage("Por favor, poné 2 🧤 o no pongas ninguno");
       setOpenSnackbar(true);
       return;
