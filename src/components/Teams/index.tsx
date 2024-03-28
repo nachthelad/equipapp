@@ -35,11 +35,17 @@ export default function Teams({
         backgroundSize: "contain",
         backgroundPosition: "center",
         width: "100vw",
+        color: "white",
       }}>
-      <Typography variant="h5">EQUIPO 1: NEGRO</Typography>
+      <Typography variant="h5" color="common.white">
+        EQUIPO 1: NEGRO
+      </Typography>
       {currentTeamOne.map((player, index) => (
         <Box key={index}>
-          <Typography variant="body1" sx={{ fontSize: "1.1rem" }}>
+          <Typography
+            variant="body1"
+            color="common.white"
+            sx={{ fontSize: "1.1rem" }}>
             {player.position !== "Jugador"
               ? `${player.name.replace("🧤", "")} (${player.position})`
               : `${player.name.replace("🧤", "")}`}
@@ -47,12 +53,15 @@ export default function Teams({
         </Box>
       ))}
 
-      <Typography variant="h5" sx={{ marginTop: 2 }}>
+      <Typography variant="h5" color="common.white" sx={{ marginTop: 2 }}>
         EQUIPO 2: BLANCO
       </Typography>
       {currentTeamTwo.map((player, index) => (
         <Box key={index}>
-          <Typography variant="body1" sx={{ fontSize: "1.1rem" }}>
+          <Typography
+            variant="body1"
+            color="common.white"
+            sx={{ fontSize: "1.1rem" }}>
             {player.position !== "Jugador"
               ? `${player.name.replace("🧤", "")} (${player.position})`
               : `${player.name.replace("🧤", "")}`}
