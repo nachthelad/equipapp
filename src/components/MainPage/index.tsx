@@ -7,6 +7,7 @@ import PositionSelection from "@/components/PositionSelection";
 import Teams from "@/components/Teams";
 import { PlayerWithPosition, TeamsData } from "@/types";
 import { shuffle } from "lodash";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function MainPage() {
   const [step, setStep] = useState(1);
@@ -86,7 +87,7 @@ export default function MainPage() {
         alignItems: "center",
       }}>
       <Box sx={{ display: "flex", justifyContent: "center" }}>
-        {step === 3 ? null : (
+        {step === 2 || step === 3 ? null : (
           <Image src="/logo.png" alt="Logo Equipapp" width={330} height={200} />
         )}
       </Box>
@@ -99,13 +100,22 @@ export default function MainPage() {
             onGoBack={goBackToMainPage}
           />
         )}
-        {step === 3 && (
-          <Teams
-            teamOne={teamOne}
-            teamTwo={teamTwo}
-            onGoBack={goBackToMainPage}
-          />
-        )}
+        <AnimatePresence>
+          {step === 3 && (
+            <motion.div
+              key="teams"
+              initial={{ x: 300, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 300, opacity: 0 }}
+              transition={{ type: "linear" }}>
+              <Teams
+                teamOne={teamOne}
+                teamTwo={teamTwo}
+                onGoBack={goBackToMainPage}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Box>
       <Snackbar
         open={openSnackbar}
