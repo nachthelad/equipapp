@@ -2,6 +2,7 @@ import React from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { InputBaseComponentProps, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useMediaQuery, useTheme } from "@mui/material";
 
 const CustomTextarea = styled(TextareaAutosize)(({ theme }) => ({
   width: "100%",
@@ -28,6 +29,9 @@ const CustomTextField = ({
   value: string;
   onChange: (value: string) => void;
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <TextField
       InputProps={{
@@ -35,7 +39,7 @@ const CustomTextField = ({
           CustomTextarea as React.ElementType<InputBaseComponentProps>,
         inputProps: {
           minRows: 3,
-          style: { color: "#fff", height: "auto" }, // Text color and height
+          style: { color: "#fff", height: "auto" },
         },
       }}
       variant="outlined"
@@ -43,21 +47,22 @@ const CustomTextField = ({
       onChange={(e) => onChange(e.target.value)}
       label="Ingresá los nombres línea por línea"
       InputLabelProps={{
-        style: { color: "#fff" }, // Label color
+        style: { color: "#fff" },
       }}
       sx={{
         "& .MuiOutlinedInput-root": {
           "& fieldset": {
-            borderColor: "white", // Border color
+            borderColor: "white",
           },
           "&:hover fieldset": {
-            borderColor: "white", // Border color on hover
+            borderColor: "white",
           },
           "&.Mui-focused fieldset": {
-            borderColor: "white", // Border color when focused
+            borderColor: "white",
           },
         },
-        width: 300, // Adjust based on your layout needs
+        maxWidth: "100%",
+        width: isMobile ? "90vw" : "30vw",
       }}
     />
   );

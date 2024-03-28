@@ -85,6 +85,7 @@ export default function MainPage() {
         flexDirection: "column",
         alignContent: "center",
         alignItems: "center",
+        width: "100vw",
       }}>
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         {step === 2 || step === 3 ? null : (

@@ -34,7 +34,7 @@ export default function Teams({
         backgroundRepeat: "no-repeat",
         backgroundSize: "contain",
         backgroundPosition: "center",
-        width: "100%",
+        width: "100vw",
       }}>
       <Typography variant="h5">EQUIPO 1: NEGRO</Typography>
       {currentTeamOne.map((player, index) => (
