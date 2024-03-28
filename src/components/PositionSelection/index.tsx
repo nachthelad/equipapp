@@ -103,7 +103,18 @@ export default function PositionSelection({
   };
   return (
     <div>
-      <Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          flexDirection: "column",
+          alignItems: "center",
+          backgroundImage: 'url("/icon-op.svg")',
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "contain",
+          backgroundPosition: "center",
+          width: "100%",
+        }}>
         {playersWithPositions && playersWithPositions.length > 0 ? (
           playersWithPositions.map((player, index) => (
             <Box key={index} sx={{ marginBottom: 2 }}>
