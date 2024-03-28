@@ -8,6 +8,8 @@ import {
   DialogActions,
   Box,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import CustomTextField from "./CustomTextField";
 
@@ -19,6 +21,8 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   const [players, setPlayers] = useState("");
   const [open, setOpen] = useState(false);
   const [_cleanedLines, setCleanedLines] = useState<string[]>([]); // Add state for cleaned lines
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,7 +45,8 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
       onFormSubmit(cleanedLines);
       setCleanedLines(cleanedLines);
     } else {
-      alert("La cantidad de jugadores debe ser 8, 10, 14 o 16");
+      setSnackbarMessage("La cantidad de jugadores debe ser 8, 10, 14 o 16");
+      setOpenSnackbar(true);
     }
   };
 
@@ -58,17 +63,22 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   };
 
   const infoDialog = (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      PaperProps={{
+        style: { backgroundColor: "#64748b", borderRadius: 20, color: "#fff" },
+      }}>
       <DialogTitle>{"¿Cómo usar?"}</DialogTitle>
       <DialogContent>
-        <DialogContentText sx={{ color: "black" }}>
+        <DialogContentText sx={{ color: "#fff" }}>
           ➡️ Ponele el emoji de los guantes (🧤) a quienes van a ser arqueros
           para que aparezcan seleccionados automáticamente.
         </DialogContentText>
-        <DialogContentText sx={{ color: "black" }}>
+        <DialogContentText sx={{ color: "#fff" }}>
           ➡️ Podés agregar 8, 10, 14 o 16 nombres, uno por línea.
         </DialogContentText>
-        <DialogContentText sx={{ color: "black" }}>
+        <DialogContentText sx={{ color: "#fff" }}>
           ➡️ Sólo en los partidos de 16 personas se pueden elegir las
           posiciones.
         </DialogContentText>
@@ -132,6 +142,17 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
           </Button>
         </Box>
       </Box>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={2000}
+        onClose={() => setOpenSnackbar(false)}>
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+          sx={{ width: "100%" }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </form>
   );
 }
