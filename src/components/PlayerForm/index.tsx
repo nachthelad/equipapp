@@ -66,10 +66,11 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
           para que aparezcan seleccionados automáticamente.
         </DialogContentText>
         <DialogContentText sx={{ color: "black" }}>
-          ➡️ Podés agregar 8, 10, 14 o 16 nombres línea por línea.
+          ➡️ Podés agregar 8, 10, 14 o 16 nombres, uno por línea.
         </DialogContentText>
         <DialogContentText sx={{ color: "black" }}>
-          ➡️ Sólo en los partidos de 16 personas se puede elegir las posiciones.
+          ➡️ Sólo en los partidos de 16 personas se pueden elegir las
+          posiciones.
         </DialogContentText>
         <DialogActions>
           <Button
@@ -104,8 +105,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
             variant="contained"
             className="actionButton"
             sx={{
-              marginTop: 2,
-              marginBottom: 1,
+              marginY: 2,
               display: "flex",
               alignContent: "flex-start",
               backgroundColor: "gray",
