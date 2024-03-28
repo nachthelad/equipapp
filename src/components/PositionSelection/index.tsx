@@ -15,6 +15,7 @@ import {
   PositionSelectionProps,
 } from "@/types";
 import { shuffle } from "lodash";
+import { motion } from "framer-motion";
 
 export default function PositionSelection({
   playerNames,
@@ -117,15 +118,19 @@ export default function PositionSelection({
         }}>
         {playersWithPositions && playersWithPositions.length > 0 ? (
           playersWithPositions.map((player, index) => (
-            <Box key={index} sx={{ marginBottom: 2 }}>
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }} 
+              style={{ marginBottom: 2 }}>
               <Typography
                 variant="body1"
                 sx={{
                   display: "flex",
                   justifyContent: "center",
-                  marginBottom: 1,
-                  marginTop: index === 0 ? 2 : 0,
-                  fontWeight: 600,
+                  marginTop: 1,
+                  fontWeight: 500,
                 }}>
                 {player.name.replace("🧤", "")}
               </Typography>
@@ -135,27 +140,36 @@ export default function PositionSelection({
                 fullWidth={isMobile}
                 size={"large"}>
                 {(["Arco", "Def", "Medio", "Del"] as PlayerPosition[]).map(
-                  (position) => (
-                    <Button
+                  (position, posIndex) => (
+                    <motion.button
                       key={position}
-                      color={
-                        player.position === position ? "primary" : "inherit"
-                      }
-                      sx={{
-                        backgroundColor:
-                          player.position === position ? "" : "#e0e0e0",
-                        "&:hover": {
-                          backgroundColor:
-                            player.position === position ? "" : "#d5d5d5",
-                        },
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.1 + posIndex * 0.1 }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      style={{
+                        border: 0,
+                        borderRadius:
+                          posIndex === 1 || posIndex === 2
+                            ? "0px"
+                            : posIndex === 0
+                            ? "5px 0px 0px 5px"
+                            : "0px 5px 5px 0px",
+                        padding: "14px 18px",
+                        cursor: "pointer",
+                        boxShadow: "0",
+                        background:
+                          player.position === position ? "#1976d2" : "#e0e0e0",
+                        color: player.position === position ? "#fff" : "#000",
                       }}
                       onClick={() => handlePositionChange(index, position)}>
                       {position}
-                    </Button>
+                    </motion.button>
                   )
                 )}
               </ButtonGroup>
-            </Box>
+            </motion.div>
           ))
         ) : (
           <Typography variant="body1">No se encontraron jugadores.</Typography>
