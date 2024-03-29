@@ -3,19 +3,19 @@ import { Button } from "@mui/material";
 import { PlayerWithPosition } from "@/types";
 import { shuffle } from "lodash";
 
-interface RandomizeTeamsProps {
+type RandomizeTeamsProps = {
   teamOne: PlayerWithPosition[];
   teamTwo: PlayerWithPosition[];
   setTeamOne: React.Dispatch<React.SetStateAction<PlayerWithPosition[]>>;
   setTeamTwo: React.Dispatch<React.SetStateAction<PlayerWithPosition[]>>;
-}
+};
 
-const RandomizeTeamsButton: React.FC<RandomizeTeamsProps> = ({
+export default function RandomizeTeamsButton({
   teamOne,
   teamTwo,
   setTeamOne,
   setTeamTwo,
-}) => {
+}: RandomizeTeamsProps) {
   const reorganizeTeams = () => {
     const shuffledPlayers = shuffle([...teamOne, ...teamTwo]);
 
@@ -73,6 +73,4 @@ const RandomizeTeamsButton: React.FC<RandomizeTeamsProps> = ({
       Volver a sortear
     </Button>
   );
-};
-
-export default RandomizeTeamsButton;
+}

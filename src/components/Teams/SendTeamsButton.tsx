@@ -2,12 +2,12 @@ import React from "react";
 import { Button } from "@mui/material";
 import { PlayerWithPosition } from "@/types";
 
-interface SendTeamsProps {
+type SendTeamsProps = {
   teamOne: PlayerWithPosition[];
   teamTwo: PlayerWithPosition[];
-}
+};
 
-const SendTeamsButton: React.FC<SendTeamsProps> = ({ teamOne, teamTwo }) => {
+export default function SendTeamsButton({ teamOne, teamTwo }: SendTeamsProps) {
   const sendViaWhatsApp = () => {
     const formatPlayerText = (player: PlayerWithPosition) => {
       const playerName = player.name.replace("🧤", "");
@@ -34,6 +34,4 @@ const SendTeamsButton: React.FC<SendTeamsProps> = ({ teamOne, teamTwo }) => {
       Enviar
     </Button>
   );
-};
-
-export default SendTeamsButton;
+}

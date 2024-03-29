@@ -1,19 +1,19 @@
 import { Button } from "@mui/material";
 import { PlayerWithPosition } from "@/types";
 
-interface CopyTeamsProps {
+type CopyTeamsProps = {
   teamOne: PlayerWithPosition[];
   teamTwo: PlayerWithPosition[];
   setSnackbarMessage: React.Dispatch<React.SetStateAction<string>>;
   setOpenSnackbar: React.Dispatch<React.SetStateAction<boolean>>;
-}
+};
 
-const CopyTeamsButton: React.FC<CopyTeamsProps> = ({
+export default function CopyTeamsButton({
   teamOne,
   teamTwo,
   setSnackbarMessage,
   setOpenSnackbar,
-}) => {
+}: CopyTeamsProps) {
   const copyTeamsToClipboard = () => {
     const teamOneText = teamOne
       .map((player) => {
@@ -53,6 +53,4 @@ const CopyTeamsButton: React.FC<CopyTeamsProps> = ({
       Copiar
     </Button>
   );
-};
-
-export default CopyTeamsButton;
+}
