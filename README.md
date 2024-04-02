@@ -1,1 +1,1 @@
-Equipapp permite armar equipos para un partido de futbol de 5vs5, 7vs7, 8vs8.
+Equipapp permite armar equipos para un partido de 8, 10, 14 o 16 personas.
