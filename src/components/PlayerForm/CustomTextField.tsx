@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { InputBaseComponentProps, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -22,13 +22,7 @@ const CustomTextarea = styled(TextareaAutosize)(({ theme }) => ({
   },
 }));
 
-const CustomTextField = ({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-}) => {
+const CustomTextField = forwardRef(function CustomTextField(props, ref) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -38,14 +32,15 @@ const CustomTextField = ({
         inputComponent:
           CustomTextarea as React.ElementType<InputBaseComponentProps>,
         inputProps: {
+          ...props,
+          ref,
           minRows: 3,
           style: { color: "#fff", height: "auto" },
         },
       }}
       variant="outlined"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
       label="Ingresá los nombres línea por línea"
+      {...props}
       InputLabelProps={{
         style: { color: "#fff" },
       }}
@@ -66,6 +61,6 @@ const CustomTextField = ({
       }}
     />
   );
-};
+});
 
 export default CustomTextField;

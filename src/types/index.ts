@@ -26,3 +26,12 @@ export type TeamsData = {
   teamOne: PlayerWithPosition[];
   teamTwo: PlayerWithPosition[];
 };
+
+export type InfoDialogProps = {
+  open: boolean;
+  handleClose: () => void;
+};
+
+export type PlayerFormProps = {
+  onFormSubmit: (playerNames: string[]) => void; // Change the type of the function
+};
