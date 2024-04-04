@@ -1,158 +1,99 @@
-import { useState } from "react";
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Box,
-  Typography,
-  Snackbar,
-  Alert,
-} from "@mui/material";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { Button, Box, Typography, Snackbar, Alert } from "@mui/material";
 import CustomTextField from "./CustomTextField";
-
-type PlayerFormProps = {
-  onFormSubmit: (playerNames: string[]) => void; // Change the type of the function
-};
+import InfoDialog from "./InfoDialog";
+import { PlayerFormProps } from "@/types";
 
 export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
-  const [players, setPlayers] = useState("");
-  const [open, setOpen] = useState(false);
-  const [_cleanedLines, setCleanedLines] = useState<string[]>([]); // Add state for cleaned lines
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      players: "",
+    },
+  });
+
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const playerNames = players
-      .split(/\r?\n/)
-      .filter((line) => line.trim() !== "");
-
-    const cleanedLines = playerNames.map((line) => {
-      let cleanedLine = line
-        .replace(/[^a-zA-Z0-9\s🧤áéíóúÁÉÍÓÚ]|(?<![a-zA-Z\sáéíóúÁÉÍÓÚ])\d+/g, "")
-        .trim()
-        .toLowerCase();
-      return cleanedLine.replace(/(^\w|\s\w|🧤\w)/g, (char) =>
-        char.toUpperCase()
-      );
-    });
-
-    if (validatePlayerCount(cleanedLines)) {
-      onFormSubmit(cleanedLines);
-      setCleanedLines(cleanedLines);
-    } else {
-      setSnackbarMessage("La cantidad de jugadores debe ser 8, 10, 14 o 16");
+  useEffect(() => {
+    if (errors.players) {
+      setSnackbarMessage(errors.players.message ?? "");
       setOpenSnackbar(true);
+    }
+  }, [errors.players]);
+
+  const onSubmit = (data: { players: string }) => {
+    const cleanedLines = data.players
+      .split(/\r?\n/)
+      .filter((line: string) => line.trim() !== "")
+      .map((line: string) =>
+        line
+          .replace(
+            /[^a-zA-Z0-9\s🧤áéíóúÁÉÍÓÚ]|(?<![a-zA-Z\sáéíóúÁÉÍÓÚ])\d+/g,
+            ""
+          )
+          .trim()
+          .toLowerCase()
+          .replace(/(^\w|\s\w|🧤\w)/g, (char: string) => char.toUpperCase())
+      );
+
+    if ([8, 10, 14, 16].includes(cleanedLines.length)) {
+      onFormSubmit(cleanedLines);
+    } else {
+      setError("players", {
+        type: "manual",
+        message: "La cantidad de jugadores debe ser 8, 10, 14 o 16",
+      });
     }
   };
 
-  function validatePlayerCount(cleanedLines: string[]): boolean {
-    return [8, 10, 14, 16].includes(cleanedLines.length);
-  }
-
-  const handleInfoClick = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const infoDialog = (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      PaperProps={{
-        style: { backgroundColor: "#64748b", borderRadius: 20, color: "#fff" },
-      }}>
-      <DialogTitle>{"¿Cómo usar?"}</DialogTitle>
-      <DialogContent>
-        <DialogContentText sx={{ color: "#fff" }}>
-          ➡️ Ponele el emoji de los guantes (🧤) a quienes van a ser arqueros
-          para que aparezcan seleccionados automáticamente.
-        </DialogContentText>
-        <DialogContentText sx={{ color: "#fff" }}>
-          ➡️ Podés agregar 8, 10, 14 o 16 nombres, uno por línea.
-        </DialogContentText>
-        <DialogContentText sx={{ color: "#fff" }}>
-          ➡️ Sólo en los partidos de 16 personas se pueden elegir las
-          posiciones.
-        </DialogContentText>
-        <DialogActions>
-          <Button
-            className="actionButton"
-            variant="contained"
-            onClick={handleClose}
-            color="primary">
-            Cerrar
-          </Button>
-        </DialogActions>
-      </DialogContent>
-    </Dialog>
-  );
-
   return (
-    <form onSubmit={handleSubmit}>
-      {infoDialog}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          flexDirection: "column",
-          alignItems: "center",
-        }}>
+    <>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Box
           sx={{
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
           }}>
           <Button
-            onClick={handleInfoClick}
+            onClick={() => setOpenDialog(true)}
             variant="contained"
-            className="actionButton"
             sx={{
-              marginY: 2,
-              display: "flex",
-              alignContent: "flex-start",
+              my: 2,
+              borderRadius: "20px",
               backgroundColor: "gray",
               "&:hover": {
                 backgroundColor: "gray",
               },
             }}>
-            <Typography variant="caption">¿Cómo usar?</Typography>{" "}
+            <Typography variant="caption">¿Cómo usar?</Typography>
           </Button>
-        </Box>
-        <CustomTextField value={players} onChange={setPlayers} />
-        <Box
-          sx={{
-            paddingY: "1rem",
-            display: "flex",
-            justifyContent: "center",
-          }}>
+          <CustomTextField {...register("players", { required: "" })} />
           <Button
-            className="actionButton"
             type="submit"
             variant="contained"
-            color="primary">
+            color="primary"
+            sx={{ mt: 2, borderRadius: "20px" }}>
             Siguiente
           </Button>
         </Box>
-      </Box>
+      </form>
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={2000}
+        autoHideDuration={6000}
         onClose={() => setOpenSnackbar(false)}>
-        <Alert
-          onClose={() => setOpenSnackbar(false)}
-          severity="error"
-          sx={{ width: "100%" }}>
+        <Alert onClose={() => setOpenSnackbar(false)} severity="error">
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </form>
+      <InfoDialog open={openDialog} handleClose={() => setOpenDialog(false)} />
+    </>
   );
 }
