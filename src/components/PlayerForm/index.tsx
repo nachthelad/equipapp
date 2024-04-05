@@ -20,6 +20,8 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
+  const vertical = "bottom";
+  const horizontal = "center";
 
   useEffect(() => {
     if (errors.players) {
@@ -86,6 +88,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
         </Box>
       </form>
       <Snackbar
+        anchorOrigin={{ vertical, horizontal }}
         open={openSnackbar}
         autoHideDuration={6000}
         onClose={() => setOpenSnackbar(false)}>
