@@ -36,8 +36,9 @@ export default function Teams({
         backgroundPosition: "center",
         width: "100vw",
         color: "white",
+        marginTop: 1,
       }}>
-      <Typography variant="h5" color="common.white">
+      <Typography variant="h6" color="common.white">
         EQUIPO 1: NEGRO
       </Typography>
       {currentTeamOne.map((player, index) => (
@@ -45,7 +46,7 @@ export default function Teams({
           <Typography
             variant="body1"
             color="common.white"
-            sx={{ fontSize: "1.1rem" }}>
+            sx={{ fontSize: "1rem" }}>
             {player.position !== "Jugador"
               ? `${player.name.replace("🧤", "")} (${player.position})`
               : `${player.name.replace("🧤", "")}`}
@@ -53,7 +54,7 @@ export default function Teams({
         </Box>
       ))}
 
-      <Typography variant="h5" color="common.white" sx={{ marginTop: 2 }}>
+      <Typography variant="h6" color="common.white" sx={{ marginTop: 1 }}>
         EQUIPO 2: BLANCO
       </Typography>
       {currentTeamTwo.map((player, index) => (
@@ -61,7 +62,7 @@ export default function Teams({
           <Typography
             variant="body1"
             color="common.white"
-            sx={{ fontSize: "1.1rem" }}>
+            sx={{ fontSize: "1rem" }}>
             {player.position !== "Jugador"
               ? `${player.name.replace("🧤", "")} (${player.position})`
               : `${player.name.replace("🧤", "")}`}
@@ -76,7 +77,7 @@ export default function Teams({
         setTeamTwo={setCurrentTeamTwo}
       />
       <Box
-        sx={{ display: "flex", justifycontent: "center", gap: 1, marginY: 1 }}>
+        sx={{ display: "flex", justifycontent: "center", gap: 1, marginBottom: 3 }}>
         <Button
           className="actionButton"
           variant="contained"
