@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Button, Typography, Box, Snackbar, Alert, useTheme, useMediaQuery } from "@mui/material";
+import {
+  Button,
+  Typography,
+  Box,
+  Snackbar,
+  Alert,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import { PlayerWithPosition } from "@/types";
 import RandomizeTeamsButton from "@/components/Teams/RandomizeTeamsButton";
 import CopyTeamsButton from "@/components/Teams/CopyTeamsButton";
@@ -25,7 +33,6 @@ export default function Teams({
     setOpenSnackbar(false);
   };
 
-
   return (
     <Box
       sx={{
@@ -40,8 +47,9 @@ export default function Teams({
         width: "100vw",
         color: "white",
         marginTop: 1,
-      }}>
-      <Typography variant= {isMobile ? "h5" : "h6"} color="common.white">
+      }}
+    >
+      <Typography variant={isMobile ? "h5" : "h6"} color="common.white">
         EQUIPO 1: NEGRO
       </Typography>
       {currentTeamOne.map((player, index) => (
@@ -49,7 +57,8 @@ export default function Teams({
           <Typography
             variant="body1"
             color="common.white"
-            sx={{ fontSize: isMobile ? "1rem" : "1.1rem" }}>
+            sx={{ fontSize: isMobile ? "1rem" : "1.1rem" }}
+          >
             {player.position !== "Jugador"
               ? `${player.name.replace("🧤", "")} (${player.position})`
               : `${player.name.replace("🧤", "")}`}
@@ -57,7 +66,11 @@ export default function Teams({
         </Box>
       ))}
 
-      <Typography variant= {isMobile ? "h5" : "h6"} color="common.white" sx={{ marginTop: 1 }}>
+      <Typography
+        variant={isMobile ? "h5" : "h6"}
+        color="common.white"
+        sx={{ marginTop: 1 }}
+      >
         EQUIPO 2: BLANCO
       </Typography>
       {currentTeamTwo.map((player, index) => (
@@ -65,7 +78,8 @@ export default function Teams({
           <Typography
             variant="body1"
             color="common.white"
-            sx={{ fontSize: isMobile ? "1rem" : "1.1rem"  }}>
+            sx={{ fontSize: isMobile ? "1rem" : "1.1rem" }}
+          >
             {player.position !== "Jugador"
               ? `${player.name.replace("🧤", "")} (${player.position})`
               : `${player.name.replace("🧤", "")}`}
@@ -80,12 +94,19 @@ export default function Teams({
         setTeamTwo={setCurrentTeamTwo}
       />
       <Box
-        sx={{ display: "flex", justifycontent: "center", gap: 1, marginBottom: 3 }}>
+        sx={{
+          display: "flex",
+          justifycontent: "center",
+          gap: 1,
+          marginBottom: 3,
+        }}
+      >
         <Button
           className="actionButton"
           variant="contained"
           color="primary"
-          onClick={onGoBack}>
+          onClick={onGoBack}
+        >
           Volver al inicio
         </Button>
         <CopyTeamsButton
@@ -99,11 +120,13 @@ export default function Teams({
       <Snackbar
         open={openSnackbar}
         autoHideDuration={2000}
-        onClose={handleCloseSnackbar}>
+        onClose={handleCloseSnackbar}
+      >
         <Alert
           onClose={handleCloseSnackbar}
           severity="success"
-          sx={{ width: "100%" }}>
+          sx={{ width: "100%" }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>
