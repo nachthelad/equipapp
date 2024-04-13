@@ -6,6 +6,7 @@ import { useMediaQuery, useTheme } from "@mui/material";
 
 const CustomTextarea = styled(TextareaAutosize)(({ theme }) => ({
   width: "100%",
+  maxHeight: "400px",
   backgroundColor: "transparent",
   borderColor: "white",
   color: "white",
@@ -25,6 +26,8 @@ const CustomTextarea = styled(TextareaAutosize)(({ theme }) => ({
 const CustomTextField = forwardRef(function CustomTextField(props, ref) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isSmallHeight = useMediaQuery('(max-height:740px)');
+  const maxRows = isSmallHeight ? 10 : 30;  
 
   return (
     <TextField
@@ -35,7 +38,11 @@ const CustomTextField = forwardRef(function CustomTextField(props, ref) {
           ...props,
           ref,
           minRows: 3,
-          style: { color: "#fff", height: "auto" },
+          maxRows: maxRows,
+          style: { 
+          color: "#fff", 
+          height: "auto",             
+        },
         },
       }}
       variant="outlined"
