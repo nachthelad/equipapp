@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Typography, Box, Snackbar, Alert } from "@mui/material";
+import { Button, Typography, Box, Snackbar, Alert, useTheme, useMediaQuery } from "@mui/material";
 import { PlayerWithPosition } from "@/types";
 import RandomizeTeamsButton from "@/components/Teams/RandomizeTeamsButton";
 import CopyTeamsButton from "@/components/Teams/CopyTeamsButton";
@@ -18,10 +18,13 @@ export default function Teams({
   const [currentTeamTwo, setCurrentTeamTwo] = useState(teamTwo);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
+
 
   return (
     <Box
@@ -38,7 +41,7 @@ export default function Teams({
         color: "white",
         marginTop: 1,
       }}>
-      <Typography variant="h6" color="common.white">
+      <Typography variant= {isMobile ? "h5" : "h6"} color="common.white">
         EQUIPO 1: NEGRO
       </Typography>
       {currentTeamOne.map((player, index) => (
@@ -46,7 +49,7 @@ export default function Teams({
           <Typography
             variant="body1"
             color="common.white"
-            sx={{ fontSize: "1rem" }}>
+            sx={{ fontSize: isMobile ? "1rem" : "1.1rem" }}>
             {player.position !== "Jugador"
               ? `${player.name.replace("🧤", "")} (${player.position})`
               : `${player.name.replace("🧤", "")}`}
@@ -54,7 +57,7 @@ export default function Teams({
         </Box>
       ))}
 
-      <Typography variant="h6" color="common.white" sx={{ marginTop: 1 }}>
+      <Typography variant= {isMobile ? "h5" : "h6"} color="common.white" sx={{ marginTop: 1 }}>
         EQUIPO 2: BLANCO
       </Typography>
       {currentTeamTwo.map((player, index) => (
@@ -62,7 +65,7 @@ export default function Teams({
           <Typography
             variant="body1"
             color="common.white"
-            sx={{ fontSize: "1rem" }}>
+            sx={{ fontSize: isMobile ? "1rem" : "1.1rem"  }}>
             {player.position !== "Jugador"
               ? `${player.name.replace("🧤", "")} (${player.position})`
               : `${player.name.replace("🧤", "")}`}
