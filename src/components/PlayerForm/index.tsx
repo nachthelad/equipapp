@@ -63,7 +63,8 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-          }}>
+          }}
+        >
           <Button
             onClick={() => setOpenDialog(true)}
             variant="contained"
@@ -74,7 +75,8 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
               "&:hover": {
                 backgroundColor: "gray",
               },
-            }}>
+            }}
+          >
             <Typography variant="caption">¿Cómo usar?</Typography>
           </Button>
           <CustomTextField {...register("players", { required: "" })} />
@@ -82,7 +84,8 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
             type="submit"
             variant="contained"
             color="primary"
-            sx={{ mt: 2, borderRadius: "20px" }}>
+            sx={{ mt: 2, borderRadius: "20px" }}
+          >
             Siguiente
           </Button>
         </Box>
@@ -91,7 +94,8 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
         anchorOrigin={{ vertical, horizontal }}
         open={openSnackbar}
         autoHideDuration={6000}
-        onClose={() => setOpenSnackbar(false)}>
+        onClose={() => setOpenSnackbar(false)}
+      >
         <Alert onClose={() => setOpenSnackbar(false)} severity="error">
           {snackbarMessage}
         </Alert>
