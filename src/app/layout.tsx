@@ -58,6 +58,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <meta
+        name="google-adsense-account"
+        content="ca-pub-1027418154196814"
+      ></meta>
       <body className={inter.className}>
         <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
       </body>
