@@ -37,7 +37,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
       .map((line: string) =>
         line
           .replace(
-            /[^a-zA-Z0-9\s🧤áéíóúÁÉÍÓÚ]|(?<![a-zA-Z\sáéíóúÁÉÍÓÚ])\d+/g,
+            /^[^a-zA-ZáéíóúÁÉÍÓÚñÑ🧤]*|[^a-zA-Z0-9\s🧤áéíóúÁÉÍÓÚñÑ]/g,
             ""
           )
           .trim()
