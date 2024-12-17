@@ -4,7 +4,7 @@ import { Alert, Box, Snackbar } from "@mui/material";
 import Image from "next/image";
 import PlayerForm from "@/components/PlayerForm";
 import PositionSelection from "@/components/PositionSelection";
-import Teams from "@/components/teams";
+import Teams from "@/components/Teams";
 import { PlayerWithPosition, TeamsData } from "@/types";
 import { shuffle } from "lodash";
 import { AnimatePresence, motion } from "framer-motion";

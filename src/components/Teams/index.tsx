@@ -9,9 +9,9 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { PlayerWithPosition } from "@/types";
-import RandomizeTeamsButton from "@/components/teams/RandomizeTeamsButton";
-import CopyTeamsButton from "@/components/teams/CopyTeamsButton";
-import SendTeamsButton from "@/components/teams/SendTeamsButton";
+import RandomizeTeamsButton from "@/components/Teams/RandomizeTeamsButton";
+import CopyTeamsButton from "@/components/Teams/CopyTeamsButton";
+import SendTeamsButton from "@/components/Teams/SendTeamsButton";
 
 export default function Teams({
   teamOne,
