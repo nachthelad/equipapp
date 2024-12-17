@@ -110,8 +110,8 @@ export default function Teams({
           Volver al inicio
         </Button>
         <CopyTeamsButton
-          teamOne={teamOne}
-          teamTwo={teamTwo}
+          teamOne={currentTeamOne}
+          teamTwo={currentTeamTwo}
           setSnackbarMessage={setSnackbarMessage}
           setOpenSnackbar={setOpenSnackbar}
         />

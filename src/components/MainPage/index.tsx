@@ -86,7 +86,8 @@ export default function MainPage() {
         alignContent: "center",
         alignItems: "center",
         width: "100vw",
-      }}>
+      }}
+    >
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         {step === 2 || step === 3 ? null : (
           <Image src="/logo.png" alt="Logo Equipapp" width={330} height={200} />
@@ -108,7 +109,8 @@ export default function MainPage() {
               initial={{ x: 300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 300, opacity: 0 }}
-              transition={{ type: "linear" }}>
+              transition={{ type: "linear" }}
+            >
               <Teams
                 teamOne={teamOne}
                 teamTwo={teamTwo}
@@ -121,11 +123,13 @@ export default function MainPage() {
       <Snackbar
         open={openSnackbar}
         autoHideDuration={2000}
-        onClose={() => setOpenSnackbar(false)}>
+        onClose={() => setOpenSnackbar(false)}
+      >
         <Alert
           onClose={() => setOpenSnackbar(false)}
           severity="error"
-          sx={{ width: "100%" }}>
+          sx={{ width: "100%" }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>
