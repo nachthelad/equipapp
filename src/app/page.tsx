@@ -12,6 +12,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { StepIndicator } from "@/components/ui/StepIndicator";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DonationSection from "@/components/DonationSection/DonationSection";
 
 // Lazy loading de componentes
 const PlayerForm = lazy(() => import("@/components/PlayerForm"));
@@ -169,6 +170,16 @@ export default function Home() {
         </AnimatePresence>
       </div>
       <Toaster />
+
+      {/* Donation Section */}
+      <DonationSection
+        title="¿Te gustó EquipApp? Invítame un café"
+        buttonText="Invitar un cafecito"
+        buttonUrl="https://cafecito.app/nachthelad"
+        buttonIcon="⚽"
+        variant="glass"
+        className="mt-8 mb-4"
+      />
     </div>
   );
 }
