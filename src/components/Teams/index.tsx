@@ -1,135 +1,273 @@
-import { useState } from "react";
+"use client";
+import { useState, useCallback, memo, useRef, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import type { PlayerWithPosition } from "@/types";
+import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 import {
-  Button,
-  Typography,
-  Box,
-  Snackbar,
-  Alert,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
-import { PlayerWithPosition } from "@/types";
-import RandomizeTeamsButton from "@/components/Teams/RandomizeTeamsButton";
-import CopyTeamsButton from "@/components/Teams/CopyTeamsButton";
-import SendTeamsButton from "@/components/Teams/SendTeamsButton";
+  formatTeamsForSharing,
+  copyToClipboard,
+  shareViaWhatsApp,
+} from "@/utils/teamActions";
+import { Shuffle, Copy, Send, Trophy, Users } from "lucide-react";
+import { shuffle } from "lodash";
 
-export default function Teams({
-  teamOne,
-  teamTwo,
-  onGoBack,
-}: {
+interface TeamsProps {
   teamOne: PlayerWithPosition[];
   teamTwo: PlayerWithPosition[];
   onGoBack: () => void;
-}) {
-  const [currentTeamOne, setCurrentTeamOne] = useState(teamOne);
-  const [currentTeamTwo, setCurrentTeamTwo] = useState(teamTwo);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+}
 
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
+function Teams({
+  teamOne: initialTeamOne,
+  teamTwo: initialTeamTwo,
+  onGoBack,
+}: TeamsProps) {
+  const { toast } = useToast();
+  const [teams, setTeams] = useState({
+    teamOne: initialTeamOne,
+    teamTwo: initialTeamTwo,
+  });
+
+  // Use ref to track if this is the first render
+  const isFirstRender = useRef(true);
+
+  // Only update on first render or when props actually change
+  if (isFirstRender.current) {
+    setTeams({
+      teamOne: initialTeamOne,
+      teamTwo: initialTeamTwo,
+    });
+    isFirstRender.current = false;
+  }
+
+  const handleRedistribute = useCallback(() => {
+    // Redistribuir los equipos usando los props originales para evitar re-renders
+    const allPlayers = [...initialTeamOne, ...initialTeamTwo];
+
+    // Use lodash shuffle for better randomization
+    const shuffledPlayers = shuffle([...allPlayers]);
+
+    const goalkeepers = shuffledPlayers.filter(
+      (player) => player.position === "Arco"
+    );
+    const defenders = shuffledPlayers.filter(
+      (player) => player.position === "Def"
+    );
+    const midfielders = shuffledPlayers.filter(
+      (player) => player.position === "Medio"
+    );
+    const forwards = shuffledPlayers.filter(
+      (player) => player.position === "Del"
+    );
+    const players = shuffledPlayers.filter(
+      (player) => player.position === "Jugador"
+    );
+
+    const positionOrder = ["Arco", "Def", "Medio", "Del", "Jugador"];
+    const comparePositions = (a: PlayerWithPosition, b: PlayerWithPosition) => {
+      return (
+        positionOrder.indexOf(a.position) - positionOrder.indexOf(b.position)
+      );
+    };
+
+    const newTeamOne: PlayerWithPosition[] = [];
+    const newTeamTwo: PlayerWithPosition[] = [];
+
+    const allPlayersOrdered = [
+      ...goalkeepers,
+      ...defenders,
+      ...midfielders,
+      ...forwards,
+      ...players,
+    ];
+    allPlayersOrdered.forEach((player, index) => {
+      if (index % 2 === 0) newTeamOne.push(player);
+      else newTeamTwo.push(player);
+    });
+
+    newTeamOne.sort(comparePositions);
+    newTeamTwo.sort(comparePositions);
+
+    // Update state in a single batch to prevent multiple re-renders
+    setTeams({
+      teamOne: newTeamOne,
+      teamTwo: newTeamTwo,
+    });
+
+    // Show toast immediately
+    toast({
+      title: "¡Equipos redistribuidos!",
+      description: "Los equipos han sido reorganizados",
+    });
+  }, [initialTeamOne, initialTeamTwo, toast]);
+
+  const handleCopyTeams = useCallback(async () => {
+    try {
+      const formattedText = formatTeamsForSharing(teams.teamOne, teams.teamTwo);
+      await copyToClipboard(formattedText);
+      toast({
+        title: "¡Copiado!",
+        description: "Los equipos se copiaron al portapapeles",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo copiar al portapapeles",
+        variant: "destructive",
+      });
+    }
+  }, [teams, toast]);
+
+  const handleShareWhatsApp = useCallback(() => {
+    const formattedText = formatTeamsForSharing(teams.teamOne, teams.teamTwo);
+    shareViaWhatsApp(formattedText);
+  }, [teams]);
+
+  const TeamCard = useMemo(() => {
+    return memo(
+      ({
+        team,
+        teamName,
+        color,
+        index,
+      }: {
+        team: PlayerWithPosition[];
+        teamName: string;
+        color: string;
+        index: number;
+      }) => (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
+          className="team-card rounded-2xl p-6 shadow-xl"
+        >
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className={`w-4 h-4 rounded-full ${color}`} />
+            <h3 className="text-xl font-bold text-gray-800">{teamName}</h3>
+            <div className="flex items-center gap-1 text-gray-600">
+              <Users className="w-4 h-4" />
+              <span className="text-sm">{team.length}</span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {team.map((player, playerIndex) => (
+              <motion.div
+                key={`${player.name}-${playerIndex}`}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 + playerIndex * 0.05 }}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <span className="font-medium text-gray-800">
+                  {player.name.replace("🧤", "")}
+                </span>
+                {player.position !== "Jugador" && (
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      player.position === "Arco"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : player.position === "Def"
+                        ? "bg-blue-100 text-blue-800"
+                        : player.position === "Medio"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {player.position}
+                  </span>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )
+    );
+  }, []);
+
+  const memoizedTeams = useMemo(
+    () => (
+      <div className="grid md:grid-cols-2 gap-6">
+        <TeamCard
+          team={teams.teamOne}
+          teamName="EQUIPO NEGRO"
+          color="bg-gray-800"
+          index={0}
+        />
+        <TeamCard
+          team={teams.teamTwo}
+          teamName="EQUIPO BLANCO"
+          color="bg-gray-300"
+          index={1}
+        />
+      </div>
+    ),
+    [teams.teamOne, teams.teamTwo]
+  );
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        flexDirection: "column",
-        alignItems: "center",
-        backgroundImage: 'url("/icon-op.svg")',
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "contain",
-        backgroundPosition: "center",
-        width: "100vw",
-        color: "white",
-        marginTop: 1,
-      }}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-4xl mx-auto space-y-6"
     >
-      <Typography variant={isMobile ? "h5" : "h6"} color="common.white">
-        EQUIPO 1: NEGRO
-      </Typography>
-      {currentTeamOne.map((player, index) => (
-        <Box key={index}>
-          <Typography
-            variant="body1"
-            color="common.white"
-            sx={{ fontSize: isMobile ? "1rem" : "1.1rem" }}
-          >
-            {player.position !== "Jugador"
-              ? `${player.name.replace("🧤", "")} (${player.position})`
-              : `${player.name.replace("🧤", "")}`}
-          </Typography>
-        </Box>
-      ))}
+      {/* Header */}
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
+          <Trophy className="w-8 h-8 text-white" />
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">¡Equipos listos!</h2>
+        <p className="text-white/70">
+          Los equipos están balanceados y listos para jugar
+        </p>
+      </div>
 
-      <Typography
-        variant={isMobile ? "h5" : "h6"}
-        color="common.white"
-        sx={{ marginTop: 1 }}
-      >
-        EQUIPO 2: BLANCO
-      </Typography>
-      {currentTeamTwo.map((player, index) => (
-        <Box key={index}>
-          <Typography
-            variant="body1"
-            color="common.white"
-            sx={{ fontSize: isMobile ? "1rem" : "1.1rem" }}
-          >
-            {player.position !== "Jugador"
-              ? `${player.name.replace("🧤", "")} (${player.position})`
-              : `${player.name.replace("🧤", "")}`}
-          </Typography>
-        </Box>
-      ))}
+      {/* Teams */}
+      {memoizedTeams}
 
-      <RandomizeTeamsButton
-        teamOne={currentTeamOne}
-        teamTwo={currentTeamTwo}
-        setTeamOne={setCurrentTeamOne}
-        setTeamTwo={setCurrentTeamTwo}
-      />
-      <Box
-        sx={{
-          display: "flex",
-          justifycontent: "center",
-          gap: 1,
-          marginBottom: 3,
-        }}
-      >
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Button
-          className="actionButton"
-          variant="contained"
-          color="primary"
-          onClick={onGoBack}
+          onClick={handleRedistribute}
+          variant="outline"
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center gap-2"
         >
-          Volver al inicio
+          <Shuffle className="w-4 h-4" />
+          Volver a sortear
         </Button>
-        <CopyTeamsButton
-          teamOne={currentTeamOne}
-          teamTwo={currentTeamTwo}
-          setSnackbarMessage={setSnackbarMessage}
-          setOpenSnackbar={setOpenSnackbar}
-        />
-        <SendTeamsButton teamOne={currentTeamOne} teamTwo={currentTeamTwo} />
-      </Box>
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={2000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="success"
-          sx={{ width: "100%" }}
+
+        <Button
+          onClick={handleCopyTeams}
+          variant="outline"
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center gap-2"
         >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Copy className="w-4 h-4" />
+          Copiar
+        </Button>
+
+        <Button
+          onClick={handleShareWhatsApp}
+          className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+        >
+          <Send className="w-4 h-4" />
+          Enviar por WhatsApp
+        </Button>
+      </div>
+
+      {/* Back button */}
+      <div className="text-center pt-4">
+        <Button
+          onClick={onGoBack}
+          variant="ghost"
+          className="text-white/70 hover:text-white hover:bg-white/10"
+        >
+          Crear nuevos equipos
+        </Button>
+      </div>
+    </motion.div>
   );
 }
+
+export default memo(Teams);

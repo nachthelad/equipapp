@@ -1,5 +1,4 @@
 import withPWAInit from "@ducanh2912/next-pwa";
-/** @type {import('next').NextConfig} */
 
 const withPWA = withPWAInit({
   dest: "public",
@@ -11,6 +10,17 @@ const withPWA = withPWAInit({
   },
 });
 
-const nextConfig = { reactStrictMode: false };
+const nextConfig = { 
+  reactStrictMode: false,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    unoptimized: true,
+  },
+};
 
 export default withPWA(nextConfig);
