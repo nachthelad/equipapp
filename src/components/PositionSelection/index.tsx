@@ -1,200 +1,145 @@
-import React, { useState } from "react";
-import {
-  Button,
-  Box,
-  Typography,
-  ButtonGroup,
-  useMediaQuery,
-  useTheme,
-  Snackbar,
-  Alert,
-} from "@mui/material";
-import {
-  PlayerWithPosition,
-  PlayerPosition,
-  PositionSelectionProps,
-} from "@/types";
-import { shuffle } from "lodash";
-import { motion } from "framer-motion";
+"use client"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import type { PlayerWithPosition, PlayerPosition, PositionSelectionProps } from "@/types"
+import { motion } from "framer-motion"
+import { useToast } from "@/hooks/use-toast"
+import { validatePositions, getPositionCounts, generateBalancedTeamsFromPositions } from "@/utils/positionValidation"
+import { Shield, Target, Zap, ArrowRight } from "lucide-react"
 
-export default function PositionSelection({
-  playerNames,
-  onPositionSelection,
-  onGoBack,
-}: PositionSelectionProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [playersWithPositions, setPlayersWithPositions] = useState<
-    PlayerWithPosition[]
-  >(
+const positionIcons = {
+  Arco: "🧤",
+  Def: <Shield className="w-4 h-4" />,
+  Medio: <Target className="w-4 h-4" />,
+  Del: <Zap className="w-4 h-4" />,
+}
+
+const positionColors = {
+  Arco: "bg-yellow-500 hover:bg-yellow-600",
+  Def: "bg-blue-500 hover:bg-blue-600",
+  Medio: "bg-green-500 hover:bg-green-600",
+  Del: "bg-red-500 hover:bg-red-600",
+}
+
+export default function PositionSelection({ playerNames, onPositionSelection, onGoBack }: PositionSelectionProps) {
+  const { toast } = useToast()
+  const [playersWithPositions, setPlayersWithPositions] = useState<PlayerWithPosition[]>(
     playerNames.map((name) => ({
       name,
       position: name.includes("🧤") ? "Arco" : "Medio",
-    }))
-  );
+    })),
+  )
 
   const handlePositionChange = (index: number, position: PlayerPosition) => {
-    const newPlayersWithPositions = [...playersWithPositions];
-    newPlayersWithPositions[index].position = position;
-    setPlayersWithPositions(newPlayersWithPositions);
-  };
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
+    const newPlayersWithPositions = [...playersWithPositions]
+    newPlayersWithPositions[index].position = position
+    setPlayersWithPositions(newPlayersWithPositions)
+  }
 
   const validateAndProceed = () => {
-    const numberOfDefenders = playersWithPositions.filter(
-      (player) => player.position === "Def"
-    ).length;
-    const numberOfGoalkeepers = playersWithPositions.filter(
-      (player) => player.position === "Arco"
-    ).length;
+    const validation = validatePositions(playersWithPositions)
 
-    if (numberOfDefenders !== 6) {
-      setSnackbarMessage("Debe haber 6 defensores seleccionados.");
-      setOpenSnackbar(true);
-      return;
+    if (!validation.isValid) {
+      toast({
+        title: "Error",
+        description: validation.errors[0],
+        variant: "destructive",
+      })
+      return
     }
 
-    if (numberOfGoalkeepers !== 2) {
-      setSnackbarMessage("Debe haber 2 arqueros seleccionados.");
-      setOpenSnackbar(true);
-      return;
-    }
+    const { teamOne, teamTwo } = generateBalancedTeamsFromPositions(playersWithPositions)
 
-    const goalkeepers = shuffle(
-      playersWithPositions.filter((player) => player.position === "Arco")
-    );
-    const defenders = shuffle(
-      playersWithPositions.filter((player) => player.position === "Def")
-    );
-    const midfielders = shuffle(
-      playersWithPositions.filter((player) => player.position === "Medio")
-    );
-    const forwards = shuffle(
-      playersWithPositions.filter((player) => player.position === "Del")
-    );
+    // Solo pasamos los datos al componente padre
+    onPositionSelection({ teamOne, teamTwo })
+  }
 
-    let teamOne = [
-      goalkeepers[0],
-      ...defenders.slice(0, 3),
-      ...midfielders.slice(0, forwards.length > 0 ? 3 : 4),
-    ];
+  const positionCounts = getPositionCounts(playersWithPositions)
 
-    let teamTwo = [
-      goalkeepers[1],
-      ...defenders.slice(3, 6),
-      ...midfielders.slice(
-        forwards.length > 0 ? 3 : 4,
-        forwards.length > 0 ? 6 : 8
-      ),
-    ];
-
-    if (forwards.length > 0) {
-      teamOne.push(forwards[0]);
-      if (forwards.length > 1) {
-        teamTwo.push(forwards[1]);
-      }
-    }
-
-    onPositionSelection({ teamOne, teamTwo });
-  };
   return (
-    <div>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          flexDirection: "column",
-          alignItems: "center",
-          backgroundImage: 'url("/icon-op.svg")',
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "contain",
-          backgroundPosition: "center",
-          width: "100%",
-        }}>
-        {playersWithPositions.map((player, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            style={{ marginBottom: 2 }}>
-            <Typography
-              variant="body1"
-              color="common.white"
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                marginTop: 1,
-                fontWeight: 500,
-              }}>
-              {player.name.replace("🧤", "")}
-            </Typography>
-            <ButtonGroup
-              variant="contained"
-              aria-label="position selection"
-              fullWidth={isMobile}
-              size={"large"}>
-              {(["Arco", "Def", "Medio", "Del"] as PlayerPosition[]).map(
-                (position, posIndex) => (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
+      <div className="glass rounded-2xl p-6 shadow-2xl">
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-semibold text-white mb-2">Seleccioná las posiciones</h2>
+          <p className="text-white/70 text-sm">Necesitás 2 arqueros y 6 defensores</p>
+        </div>
+
+        {/* Position counters */}
+        <div className="grid grid-cols-4 gap-2 mb-6 p-4 bg-white/10 rounded-xl">
+          {(["Arco", "Def", "Medio", "Del"] as PlayerPosition[]).map((position) => (
+            <div key={position} className="text-center">
+              <div
+                className={`w-8 h-8 mx-auto mb-1 rounded-full flex items-center justify-center text-white text-sm ${
+                  position === "Arco"
+                    ? "bg-yellow-500"
+                    : position === "Def"
+                      ? "bg-blue-500"
+                      : position === "Medio"
+                        ? "bg-green-500"
+                        : "bg-red-500"
+                }`}
+              >
+                {typeof positionIcons[position] === "string" ? positionIcons[position] : positionIcons[position]}
+              </div>
+              <div className="text-white text-xs font-medium">{position}</div>
+              <div
+                className={`text-xs font-bold ${
+                  (position === "Arco" && positionCounts[position] === 2) ||
+                  (position === "Def" && positionCounts[position] === 6)
+                    ? "text-green-300"
+                    : "text-white/70"
+                }`}
+              >
+                {positionCounts[position]}
+                {position === "Arco" && "/2"}
+                {position === "Def" && "/6"}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Players list */}
+        <div className="space-y-3 mb-6 max-h-96 overflow-y-auto">
+          {playersWithPositions.map((player, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="bg-white/10 rounded-xl p-4"
+            >
+              <div className="text-white font-medium mb-3 text-center">{player.name.replace("🧤", "")}</div>
+              <div className="grid grid-cols-4 gap-2">
+                {(["Arco", "Def", "Medio", "Del"] as PlayerPosition[]).map((position) => (
                   <motion.button
                     key={position}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.1 + posIndex * 0.1 }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    style={{
-                      border: 0,
-                      borderRadius:
-                        posIndex === 1 || posIndex === 2
-                          ? "0px"
-                          : posIndex === 0
-                          ? "5px 0px 0px 5px"
-                          : "0px 5px 5px 0px",
-                      padding: "14px 18px",
-                      cursor: "pointer",
-                      boxShadow: "0",
-                      background:
-                        player.position === position ? "#1976d2" : "#e0e0e0",
-                      color: player.position === position ? "#fff" : "#000",
-                    }}
-                    onClick={() => handlePositionChange(index, position)}>
-                    {position}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`p-3 rounded-lg text-white font-medium text-sm transition-all duration-200 flex flex-col items-center gap-1 ${
+                      player.position === position ? positionColors[position] : "bg-white/20 hover:bg-white/30"
+                    }`}
+                    onClick={() => handlePositionChange(index, position)}
+                  >
+                    <div className="text-lg">
+                      {typeof positionIcons[position] === "string" ? positionIcons[position] : positionIcons[position]}
+                    </div>
+                    <span>{position}</span>
                   </motion.button>
-                )
-              )}
-            </ButtonGroup>
-          </motion.div>
-        ))}
-      </Box>
-      <Box
-        sx={{ display: "flex", justifyContent: "center", gap: 1, marginY: 2 }}>
-        <Button className="actionButton" variant="contained" onClick={onGoBack}>
-          Atrás
-        </Button>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
         <Button
-          className="actionButton"
-          variant="contained"
-          onClick={validateAndProceed}>
-          Siguiente
+          onClick={validateAndProceed}
+          className="w-full bg-white text-purple-700 hover:bg-white/90 font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+          disabled={positionCounts.Arco !== 2 || positionCounts.Def !== 6}
+        >
+          Generar equipos
+          <ArrowRight className="w-4 h-4" />
         </Button>
-      </Box>
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={2000}
-        onClose={handleCloseSnackbar}>
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="error"
-          sx={{ width: "100%" }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </div>
-  );
+      </div>
+    </motion.div>
+  )
 }

@@ -1,15 +1,14 @@
-import type { Metadata, Viewport } from "next";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
-import { Inter } from "next/font/google";
-import "./globals.css";
+import type React from "react"
+import type { Metadata, Viewport } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"] })
 
-const APP_NAME = "equipapp";
-const APP_DEFAULT_TITLE = "Equipapp";
-const APP_TITLE_TEMPLATE = "Equiapp - %s";
-const APP_DESCRIPTION =
-  "Una app para gestionar el armado de los equipos de tu deporte favorito";
+const APP_NAME = "equipapp"
+const APP_DEFAULT_TITLE = "Equipapp"
+const APP_TITLE_TEMPLATE = "Equiapp - %s"
+const APP_DESCRIPTION = "Una app para gestionar el armado de los equipos de tu deporte favorito"
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -45,26 +44,23 @@ export const metadata: Metadata = {
     },
     description: APP_DESCRIPTION,
   },
-};
+}
 
 export const viewport: Viewport = {
   themeColor: "#64748b",
-};
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="es">
-      <meta
-        name="google-adsense-account"
-        content="ca-pub-1027418154196814"
-      ></meta>
-      <body className={inter.className}>
-        <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
-      </body>
+      <head>
+        <meta name="google-adsense-account" content="ca-pub-1027418154196814" />
+      </head>
+      <body className={inter.className}>{children}</body>
     </html>
-  );
+  )
 }
