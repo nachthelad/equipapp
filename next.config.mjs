@@ -2,15 +2,18 @@ import withPWAInit from "@ducanh2912/next-pwa";
 
 const withPWA = withPWAInit({
   dest: "public",
-  disable: process.env.NODE_ENV === "development",
+  disable: false, // Habilitar PWA en desarrollo para testing
   register: true,
   scope: "/",
+  sw: "/sw-custom.js",
   workboxOptions: {
     disableDevLogs: true,
+    skipWaiting: true,
+    clientsClaim: true,
   },
 });
 
-const nextConfig = { 
+const nextConfig = {
   reactStrictMode: false,
   eslint: {
     ignoreDuringBuilds: true,

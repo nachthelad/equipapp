@@ -3,6 +3,7 @@
   "name": "equipapp",
   "short_name": "equipapp",
   "description": "Una app para gestionar el armado de los equipos de tu deporte favorito",
+  "version": "1.20250801.1924",
   "theme_color": "#64748b",
   "background_color": "#64748b",
   "display": "standalone",
