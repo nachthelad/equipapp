@@ -13,6 +13,7 @@ import { StepIndicator } from "@/components/ui/StepIndicator";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DonationSection from "@/components/DonationSection/DonationSection";
+import { UpdateSettings } from "@/components/ui/UpdateSettings";
 
 // Lazy loading de componentes
 const PlayerForm = lazy(() => import("@/components/PlayerForm"));
@@ -152,7 +153,7 @@ export default function Home() {
                 Volver
               </Button>
               <StepIndicator currentStep={step} totalSteps={3} />
-              <div className="w-20" />
+              <UpdateSettings />
             </div>
           )}
         </motion.div>
