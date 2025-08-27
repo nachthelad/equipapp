@@ -7,21 +7,23 @@ import { useToast } from "@/hooks/use-toast"
 import { validatePositions, getPositionCounts, generateBalancedTeamsFromPositions } from "@/utils/positionValidation"
 import { Shield, Target, Zap, ArrowRight } from "lucide-react"
 
-const positionIcons = {
+const positionIcons: Record<PlayerPosition, string | React.ReactElement> = {
   Arco: "🧤",
   Def: <Shield className="w-4 h-4" />,
   Medio: <Target className="w-4 h-4" />,
   Del: <Zap className="w-4 h-4" />,
+  Jugador: "👤",
 }
 
-const positionColors = {
+const positionColors: Record<PlayerPosition, string> = {
   Arco: "bg-yellow-500 hover:bg-yellow-600",
   Def: "bg-blue-500 hover:bg-blue-600",
   Medio: "bg-green-500 hover:bg-green-600",
   Del: "bg-red-500 hover:bg-red-600",
+  Jugador: "bg-gray-500 hover:bg-gray-600",
 }
 
-export default function PositionSelection({ playerNames, onPositionSelection, onGoBack }: PositionSelectionProps) {
+export default function PositionSelection({ playerNames, onPositionSelection }: PositionSelectionProps) {
   const { toast } = useToast()
   const [playersWithPositions, setPlayersWithPositions] = useState<PlayerWithPosition[]>(
     playerNames.map((name) => ({

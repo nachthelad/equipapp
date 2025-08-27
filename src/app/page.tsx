@@ -6,14 +6,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigation } from "@/hooks/useNavigation";
 import { useTeamGeneration } from "@/hooks/useTeamGeneration";
+import { useKeyboardShortcuts, useGlobalKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { validateGoalkeepers } from "@/utils/playerValidation";
 import { Toaster } from "@/components/ui/toaster";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { PlayerFormSkeleton } from "@/components/ui/PlayerFormSkeleton";
+import { PositionSelectionSkeleton } from "@/components/ui/PositionSelectionSkeleton";
 import { StepIndicator } from "@/components/ui/StepIndicator";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DonationSection from "@/components/DonationSection/DonationSection";
-import { UpdateSettings } from "@/components/ui/UpdateSettings";
 
 // Lazy loading de componentes
 const PlayerForm = lazy(() => import("@/components/PlayerForm"));
@@ -85,17 +86,47 @@ export default function Home() {
     resetTeams();
   }, [goToStart, resetTeams]);
 
+  // Global keyboard shortcuts
+  useGlobalKeyboardShortcuts();
+
+  // Step-specific keyboard shortcuts
+  const stepShortcuts = useMemo(() => {
+    const shortcuts = [];
+    
+    if (step > 1) {
+      shortcuts.push({
+        key: "b",
+        action: handleGoBack,
+        description: "Volver atrás",
+      });
+    }
+
+    if (step === 3) {
+      shortcuts.push({
+        key: "r",
+        action: () => {
+          // This will be handled by the Teams component
+        },
+        description: "Redistribuir equipos",
+      });
+    }
+
+    return shortcuts;
+  }, [step, handleGoBack]);
+
+  useKeyboardShortcuts(stepShortcuts);
+
   const renderCurrentStep = useMemo(() => {
     switch (step) {
       case 1:
         return (
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<PlayerFormSkeleton />}>
             <PlayerForm onFormSubmit={handleFormSubmit} />
           </Suspense>
         );
       case 2:
         return (
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<PositionSelectionSkeleton />}>
             <PositionSelection
               playerNames={playerNames}
               onPositionSelection={handlePositionSelection}
@@ -153,7 +184,7 @@ export default function Home() {
                 Volver
               </Button>
               <StepIndicator currentStep={step} totalSteps={3} />
-              <UpdateSettings />
+              <div className="w-8"></div>
             </div>
           )}
         </motion.div>

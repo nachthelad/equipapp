@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClientWrapper } from "@/components/ui/ClientWrapper";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -63,8 +64,10 @@ export default function RootLayout({
         <meta name="google-adsense-account" content="ca-pub-1027418154196814" />
       </head>
       <body className={inter.className}>
-        <ClientWrapper />
-        {children}
+        <ErrorBoundary>
+          <ClientWrapper />
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   );

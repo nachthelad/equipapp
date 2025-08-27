@@ -11,9 +11,12 @@ import { useToast } from "@/hooks/use-toast";
 import {
   parsePlayerInput,
   validatePlayerCount,
+  validateDuplicateNames,
 } from "@/utils/playerValidation";
 import { Users, HelpCircle, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { UpdateButton } from "@/components/ui/UpdateButton";
 
 export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   const {
@@ -47,18 +50,43 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
 
   const onSubmit = (data: { players: string }) => {
     const cleanedLines = parsePlayerInput(data.players);
-    const validation = validatePlayerCount(cleanedLines.length);
-
-    if (!validation.isValid) {
+    
+    // Validate player count first
+    const countValidation = validatePlayerCount(cleanedLines.length);
+    if (!countValidation.isValid) {
       setError("players", {
         type: "manual",
-        message: validation.message,
+        message: countValidation.message,
+      });
+      return;
+    }
+
+    // Validate duplicates
+    const duplicateValidation = validateDuplicateNames(cleanedLines);
+    if (!duplicateValidation.isValid) {
+      setError("players", {
+        type: "manual",
+        message: duplicateValidation.message,
       });
       return;
     }
 
     onFormSubmit(cleanedLines);
   };
+
+  // Keyboard shortcuts for form
+  useKeyboardShortcuts([
+    {
+      key: "Enter",
+      ctrlKey: true,
+      action: () => {
+        if (playerCount > 0) {
+          handleSubmit(onSubmit)();
+        }
+      },
+      description: "Enviar formulario (Ctrl+Enter)",
+    },
+  ]);
 
   return (
     <motion.div
@@ -83,15 +111,18 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
               <Label htmlFor="players" className="text-white font-medium">
                 Lista de jugadores
               </Label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setOpenDialog(true)}
-                className="text-white/70 hover:text-white hover:bg-white/10 p-2"
-              >
-                <HelpCircle className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <UpdateButton />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setOpenDialog(true)}
+                  className="text-white/70 hover:text-white hover:bg-white/10 p-2"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="relative">

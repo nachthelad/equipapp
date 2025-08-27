@@ -27,6 +27,7 @@ export function getPositionCounts(players: PlayerWithPosition[]) {
     Def: players.filter((p) => p.position === "Def").length,
     Medio: players.filter((p) => p.position === "Medio").length,
     Del: players.filter((p) => p.position === "Del").length,
+    Jugador: players.filter((p) => p.position === "Jugador").length,
   }
 }
 

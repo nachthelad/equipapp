@@ -1,6 +1,6 @@
 {
   "name": "equipapp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "build": "node scripts/update-version.js && next build",
@@ -10,6 +10,9 @@
     "update-version": "node scripts/update-version.js"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@ducanh2912/next-pwa": "latest",
     "@emotion/is-prop-valid": "latest",
     "@emotion/react": "latest",
