@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, memo, useRef, useMemo } from "react";
+import { useState, useCallback, memo, useRef, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import type { PlayerWithPosition } from "@/types";
 import { motion } from "framer-motion";
@@ -12,7 +12,17 @@ import {
 import { Shuffle, Copy, Send, Trophy, Users } from "lucide-react";
 import { shuffle } from "lodash";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { DndContext, DragOverlay, closestCenter, DragStartEvent, DragEndEvent } from "@dnd-kit/core";
+import { 
+  DndContext, 
+  DragOverlay, 
+  closestCenter, 
+  DragStartEvent, 
+  DragEndEvent,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors
+} from "@dnd-kit/core";
 import { usePlayerSwap, type PlayerSwapData } from "@/hooks/usePlayerSwap";
 import { DraggablePlayerCard } from "./DraggablePlayerCard";
 
@@ -143,16 +153,39 @@ function Teams({
     onSwap: handleTeamSwap,
   });
 
+  // Configure sensors for better mobile support
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px of movement before activating
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // 200ms delay before activation
+        tolerance: 8, // Allow 8px of tolerance during delay
+      },
+    })
+  );
+
   // Drag and drop handlers
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const { active } = event;
     const player = active.data.current?.player as PlayerWithPosition;
     setActivePlayer(player);
+    
+    // Prevent body scrolling during drag on mobile
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
   }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     setActivePlayer(null);
+    
+    // Restore body scrolling after drag
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
 
     if (!over) return;
 
@@ -167,14 +200,14 @@ function Teams({
     // Don't swap with self
     if (draggedPlayer.name === targetPlayer.name) return;
 
-    // Check if swap is allowed
-    if (!canSwap(draggedPlayer, targetPlayer)) return;
-
     // Get player positions
     const draggedPos = getPlayerTeamAndIndex(`${draggedPlayer.name}-${draggedPlayer.position}`);
     const targetPos = getPlayerTeamAndIndex(`${targetPlayer.name}-${targetPlayer.position}`);
 
     if (!draggedPos || !targetPos) return;
+
+    // Check if swap is allowed
+    if (!canSwap(draggedPlayer, targetPlayer, draggedPos.team, targetPos.team)) return;
 
     // Create swap data
     const swapData: PlayerSwapData = {
@@ -188,6 +221,15 @@ function Teams({
 
     swapPlayers(swapData);
   }, [canSwap, getPlayerTeamAndIndex, swapPlayers]);
+
+  // Cleanup effect to restore scrolling if component unmounts during drag
+  useEffect(() => {
+    return () => {
+      // Restore scrolling on cleanup
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, []);
 
   // Keyboard shortcuts for teams
   useKeyboardShortcuts([
@@ -273,6 +315,7 @@ function Teams({
 
   return (
     <DndContext
+      sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
@@ -288,8 +331,19 @@ function Teams({
             <Trophy className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">¡Equipos listos!</h2>
-          <p className="text-white/70">
-            Los equipos están balanceados y listos para jugar. Arrastrá jugadores para intercambiarlos.
+          <p className="text-white/70 text-center max-w-md mx-auto">
+            Los equipos están balanceados y listos para jugar.
+          </p>
+          <p className="text-white/60 text-sm text-center max-w-md mx-auto">
+            📱 Mantené presionado un jugador para arrastrarlo
+            {teams.teamOne.length === 8 && teams.teamTwo.length === 8 ? (
+              <span className="block">• Entre equipos: intercambia equipos y posiciones</span>
+            ) : null}
+            {teams.teamOne.length === 8 && teams.teamTwo.length === 8 ? (
+              <span className="block">• Mismo equipo: intercambia solo posiciones</span>
+            ) : (
+              <span className="block">• Solo entre equipos diferentes</span>
+            )}
           </p>
         </div>
 

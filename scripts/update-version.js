@@ -60,26 +60,57 @@ function updateVersionInFile(filePath, version) {
   }
 }
 
+// Función para leer la versión del package.json
+function getPackageVersion() {
+  try {
+    const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
+    return packageJson.version;
+  } catch (error) {
+    console.error("❌ Error leyendo package.json:", error.message);
+    return "0.1.0"; // fallback
+  }
+}
+
 // Función principal
 function main() {
-  const version = generateVersion();
-  console.log(`🔄 Actualizando versión a: ${version}`);
+  const buildVersion = generateVersion(); // For cache busting
+  const userVersion = getPackageVersion(); // For user display
+  
+  console.log(`🔄 Actualizando versión de usuario: ${userVersion}`);
+  console.log(`🔄 Actualizando versión de build: ${buildVersion}`);
 
-  const filesToUpdate = [
-    "public/manifest.json",
-    "src/utils/version.ts",
-    "public/sw-custom.js",
-  ];
-
-  filesToUpdate.forEach((filePath) => {
-    if (fs.existsSync(filePath)) {
-      updateVersionInFile(filePath, version);
-    } else {
-      console.warn(`⚠️ Archivo no encontrado: ${filePath}`);
-    }
-  });
+  // Update files with appropriate versions
+  updateVersionInFile("public/manifest.json", userVersion); // Use user version in manifest
+  updateAppVersionInFile("src/utils/version.ts", userVersion, buildVersion); // Update both versions
+  updateVersionInFile("public/sw-custom.js", buildVersion); // Use build version for cache names
 
   console.log("✅ Actualización de versión completada");
+}
+
+// New function to update both versions in version.ts
+function updateAppVersionInFile(filePath, userVersion, buildVersion) {
+  try {
+    let content = fs.readFileSync(filePath, "utf8");
+    
+    // Update APP_VERSION (user-facing)
+    content = content.replace(
+      /export const APP_VERSION = '[^']*'/,
+      `export const APP_VERSION = '${userVersion}'`
+    );
+    
+    // Update BUILD_VERSION (cache-busting)
+    content = content.replace(
+      /export const BUILD_VERSION = '[^']*'/,
+      `export const BUILD_VERSION = '${buildVersion}'`
+    );
+    
+    fs.writeFileSync(filePath, content);
+    console.log(`✅ Versiones actualizadas en ${filePath}:`);
+    console.log(`   - Usuario: ${userVersion}`);
+    console.log(`   - Build: ${buildVersion}`);
+  } catch (error) {
+    console.error(`❌ Error actualizando versiones en ${filePath}:`, error.message);
+  }
 }
 
 // Ejecutar si se llama directamente
@@ -87,4 +118,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { generateVersion, updateVersionInFile };
+module.exports = { generateVersion, updateVersionInFile, getPackageVersion, updateAppVersionInFile };
