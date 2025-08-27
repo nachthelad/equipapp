@@ -11,6 +11,10 @@ import {
 } from "@/utils/teamActions";
 import { Shuffle, Copy, Send, Trophy, Users } from "lucide-react";
 import { shuffle } from "lodash";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { DndContext, DragOverlay, closestCenter, DragStartEvent, DragEndEvent } from "@dnd-kit/core";
+import { usePlayerSwap, type PlayerSwapData } from "@/hooks/usePlayerSwap";
+import { DraggablePlayerCard } from "./DraggablePlayerCard";
 
 interface TeamsProps {
   teamOne: PlayerWithPosition[];
@@ -28,6 +32,7 @@ function Teams({
     teamOne: initialTeamOne,
     teamTwo: initialTeamTwo,
   });
+  const [activePlayer, setActivePlayer] = useState<PlayerWithPosition | null>(null);
 
   // Use ref to track if this is the first render
   const isFirstRender = useRef(true);
@@ -124,6 +129,85 @@ function Teams({
     shareViaWhatsApp(formattedText);
   }, [teams]);
 
+  // Player swap functionality
+  const handleTeamSwap = useCallback((newTeamOne: PlayerWithPosition[], newTeamTwo: PlayerWithPosition[]) => {
+    setTeams({
+      teamOne: newTeamOne,
+      teamTwo: newTeamTwo,
+    });
+  }, []);
+
+  const { swapPlayers, canSwap, getPlayerTeamAndIndex } = usePlayerSwap({
+    teamOne: teams.teamOne,
+    teamTwo: teams.teamTwo,
+    onSwap: handleTeamSwap,
+  });
+
+  // Drag and drop handlers
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const { active } = event;
+    const player = active.data.current?.player as PlayerWithPosition;
+    setActivePlayer(player);
+  }, []);
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    setActivePlayer(null);
+
+    if (!over) return;
+
+    const draggedData = active.data.current;
+    const droppedData = over.data.current;
+
+    if (!draggedData || !droppedData) return;
+
+    const draggedPlayer = draggedData.player as PlayerWithPosition;
+    const targetPlayer = droppedData.player as PlayerWithPosition;
+
+    // Don't swap with self
+    if (draggedPlayer.name === targetPlayer.name) return;
+
+    // Check if swap is allowed
+    if (!canSwap(draggedPlayer, targetPlayer)) return;
+
+    // Get player positions
+    const draggedPos = getPlayerTeamAndIndex(`${draggedPlayer.name}-${draggedPlayer.position}`);
+    const targetPos = getPlayerTeamAndIndex(`${targetPlayer.name}-${targetPlayer.position}`);
+
+    if (!draggedPos || !targetPos) return;
+
+    // Create swap data
+    const swapData: PlayerSwapData = {
+      fromTeam: draggedPos.team,
+      toTeam: targetPos.team,
+      fromIndex: draggedPos.index,
+      toIndex: targetPos.index,
+      draggedPlayer,
+      targetPlayer,
+    };
+
+    swapPlayers(swapData);
+  }, [canSwap, getPlayerTeamAndIndex, swapPlayers]);
+
+  // Keyboard shortcuts for teams
+  useKeyboardShortcuts([
+    {
+      key: "r",
+      action: handleRedistribute,
+      description: "Redistribuir equipos (R)",
+    },
+    {
+      key: "c",
+      action: handleCopyTeams,
+      description: "Copiar equipos (C)",
+    },
+    {
+      key: "w",
+      action: handleShareWhatsApp,
+      description: "Compartir por WhatsApp (W)",
+    },
+  ]);
+
   const TeamCard = useMemo(() => {
     return memo(
       ({
@@ -154,32 +238,12 @@ function Teams({
 
           <div className="space-y-2">
             {team.map((player, playerIndex) => (
-              <motion.div
+              <DraggablePlayerCard
                 key={`${player.name}-${playerIndex}`}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 + playerIndex * 0.05 }}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
-                <span className="font-medium text-gray-800">
-                  {player.name.replace("🧤", "")}
-                </span>
-                {player.position !== "Jugador" && (
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      player.position === "Arco"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : player.position === "Def"
-                        ? "bg-blue-100 text-blue-800"
-                        : player.position === "Medio"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {player.position}
-                  </span>
-                )}
-              </motion.div>
+                player={player}
+                playerIndex={playerIndex}
+                teamName={teamName === "EQUIPO NEGRO" ? "teamOne" : "teamTwo"}
+              />
             ))}
           </div>
         </motion.div>
@@ -208,24 +272,29 @@ function Teams({
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl mx-auto space-y-6"
+    <DndContext
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
-      {/* Header */}
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
-          <Trophy className="w-8 h-8 text-white" />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-4xl mx-auto space-y-6"
+      >
+        {/* Header */}
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
+            <Trophy className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">¡Equipos listos!</h2>
+          <p className="text-white/70">
+            Los equipos están balanceados y listos para jugar. Arrastrá jugadores para intercambiarlos.
+          </p>
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">¡Equipos listos!</h2>
-        <p className="text-white/70">
-          Los equipos están balanceados y listos para jugar
-        </p>
-      </div>
 
-      {/* Teams */}
-      {memoizedTeams}
+        {/* Teams */}
+        {memoizedTeams}
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -256,17 +325,30 @@ function Teams({
         </Button>
       </div>
 
-      {/* Back button */}
-      <div className="text-center pt-4">
-        <Button
-          onClick={onGoBack}
-          variant="ghost"
-          className="text-white/70 hover:text-white hover:bg-white/10"
-        >
-          Crear nuevos equipos
-        </Button>
-      </div>
-    </motion.div>
+        {/* Back button */}
+        <div className="text-center pt-4">
+          <Button
+            onClick={onGoBack}
+            variant="ghost"
+            className="text-white/70 hover:text-white hover:bg-white/10"
+          >
+            Crear nuevos equipos
+          </Button>
+        </div>
+      </motion.div>
+
+      {/* Drag Overlay */}
+      <DragOverlay>
+        {activePlayer ? (
+          <DraggablePlayerCard
+            player={activePlayer}
+            playerIndex={0}
+            teamName="teamOne"
+            isDragOverlay={true}
+          />
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }
 

@@ -29,7 +29,7 @@ export async function checkForNewVersion(): Promise<boolean> {
       return false;
     }
 
-    const manifest = await response.json();
+    await response.json();
 
     // Comparar versiones (aquí puedes implementar tu lógica de versionado)
     // Por ahora, siempre retornamos false ya que no tenemos un sistema de versionado
