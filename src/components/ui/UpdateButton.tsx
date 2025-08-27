@@ -67,7 +67,8 @@ export function UpdateButton() {
                     Hay una nueva versión de EquipApp lista para usar con mejoras y nuevas funciones.
                   </p>
                   <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-500">
-                    <p>Versión actual: {versionInfo.version}</p>
+                    <p>Versión: <span className="font-medium">v{versionInfo.version}</span></p>
+                    <p>Build: <span className="font-mono text-xs">{versionInfo.buildVersion}</span></p>
                     <p>Compilado: {new Date(versionInfo.buildDate).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -137,7 +138,8 @@ export function UpdateButton() {
                     Estás usando la versión más reciente de EquipApp.
                   </p>
                   <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-500">
-                    <p>Versión actual: {versionInfo.version}</p>
+                    <p>Versión: <span className="font-medium">v{versionInfo.version}</span></p>
+                    <p>Build: <span className="font-mono text-xs">{versionInfo.buildVersion}</span></p>
                     <p>Compilado: {new Date(versionInfo.buildDate).toLocaleDateString()}</p>
                     <p>Modo PWA: {versionInfo.isPWA ? "Sí" : "No"}</p>
                   </div>

@@ -24,6 +24,22 @@ export function usePlayerSwap({ teamOne, teamTwo, onSwap }: UsePlayerSwapProps) 
   const swapPlayers = useCallback((swapData: PlayerSwapData) => {
     const { fromTeam, toTeam, fromIndex, toIndex, draggedPlayer, targetPlayer } = swapData;
 
+    // Check if it's a same-team swap
+    const isSameTeam = fromTeam === toTeam;
+    const totalPlayers = teamOne.length + teamTwo.length;
+    const is8v8 = totalPlayers === 16 && teamOne.length === 8 && teamTwo.length === 8;
+
+    // Rule 1: Prevent same-team swaps unless it's 8v8
+    if (isSameTeam && !is8v8) {
+      toast({
+        title: "No se puede intercambiar",
+        description: "No podés mover jugadores dentro del mismo equipo",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
     // Create copies of the teams
     const newTeamOne = [...teamOne];
     const newTeamTwo = [...teamTwo];
@@ -32,15 +48,51 @@ export function usePlayerSwap({ teamOne, teamTwo, onSwap }: UsePlayerSwapProps) 
     const sourceTeam = fromTeam === "teamOne" ? newTeamOne : newTeamTwo;
     const targetTeam = toTeam === "teamOne" ? newTeamOne : newTeamTwo;
 
-    // Perform the swap
-    if (fromTeam === toTeam) {
-      // Swapping within the same team (reordering)
-      sourceTeam[fromIndex] = targetPlayer;
-      sourceTeam[toIndex] = draggedPlayer;
+    if (isSameTeam) {
+      // Rule 2: 8v8 same-team reordering - swap positions
+      const draggedWithTargetPosition = {
+        ...draggedPlayer,
+        position: targetPlayer.position,
+      };
+      const targetWithDraggedPosition = {
+        ...targetPlayer,
+        position: draggedPlayer.position,
+      };
+
+      sourceTeam[fromIndex] = targetWithDraggedPosition;
+      sourceTeam[toIndex] = draggedWithTargetPosition;
+
+      toast({
+        title: "¡Posiciones intercambiadas!",
+        description: `${draggedPlayer.name.replace("🧤", "")} ahora es ${targetPlayer.position}, ${targetPlayer.name.replace("🧤", "")} ahora es ${draggedPlayer.position}`,
+        duration: 3000,
+      });
     } else {
-      // Swapping between different teams
-      sourceTeam[fromIndex] = targetPlayer;
-      targetTeam[toIndex] = draggedPlayer;
+      // Rule 3: Cross-team swaps - players adopt the position of who they replace
+      const draggedWithNewPosition = {
+        ...draggedPlayer,
+        position: targetPlayer.position,
+      };
+      const targetWithNewPosition = {
+        ...targetPlayer,
+        position: draggedPlayer.position,
+      };
+
+      sourceTeam[fromIndex] = targetWithNewPosition;
+      targetTeam[toIndex] = draggedWithNewPosition;
+
+      const positionChange1 = draggedPlayer.position !== targetPlayer.position 
+        ? ` (ahora ${targetPlayer.position})` 
+        : '';
+      const positionChange2 = targetPlayer.position !== draggedPlayer.position 
+        ? ` (ahora ${draggedPlayer.position})` 
+        : '';
+
+      toast({
+        title: "¡Intercambio exitoso!",
+        description: `${draggedPlayer.name.replace("🧤", "")}${positionChange1} ↔️ ${targetPlayer.name.replace("🧤", "")}${positionChange2}`,
+        duration: 3000,
+      });
     }
 
     // Sort teams by position for consistency
@@ -54,20 +106,31 @@ export function usePlayerSwap({ teamOne, teamTwo, onSwap }: UsePlayerSwapProps) 
 
     // Apply the changes
     onSwap(newTeamOne, newTeamTwo);
-
-    // Show success toast
-    toast({
-      title: "¡Intercambio exitoso!",
-      description: `${draggedPlayer.name.replace("🧤", "")} ↔️ ${targetPlayer.name.replace("🧤", "")}`,
-      duration: 2000,
-    });
   }, [teamOne, teamTwo, onSwap, toast]);
 
-  const canSwap = useCallback((draggedPlayer: PlayerWithPosition, targetPlayer: PlayerWithPosition): boolean => {
-    // Allow swapping any player with any other player
-    // No restrictions for now, but this could be extended to include position-based rules
-    return draggedPlayer.name !== targetPlayer.name;
-  }, []);
+  const canSwap = useCallback((draggedPlayer: PlayerWithPosition, targetPlayer: PlayerWithPosition, draggedTeam?: "teamOne" | "teamTwo", targetTeam?: "teamOne" | "teamTwo"): boolean => {
+    // Basic validation: can't swap with self
+    if (draggedPlayer.name === targetPlayer.name) {
+      return false;
+    }
+
+    // If team info is not provided, allow the swap (validation will happen in swapPlayers)
+    if (!draggedTeam || !targetTeam) {
+      return true;
+    }
+
+    // Check if it's a same-team swap
+    const isSameTeam = draggedTeam === targetTeam;
+    const totalPlayers = teamOne.length + teamTwo.length;
+    const is8v8 = totalPlayers === 16 && teamOne.length === 8 && teamTwo.length === 8;
+
+    // Allow same-team swaps only for 8v8
+    if (isSameTeam && !is8v8) {
+      return false;
+    }
+
+    return true;
+  }, [teamOne, teamTwo]);
 
   const getPlayerTeamAndIndex = useCallback((playerId: string): { team: "teamOne" | "teamTwo"; index: number } | null => {
     // Find in team one

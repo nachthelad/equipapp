@@ -1,11 +1,13 @@
 // Configuración de versionado para la aplicación
-export const APP_VERSION = "1.0.0";
+export const APP_VERSION = "0.2.0"; // This will be auto-updated from package.json during build
 export const BUILD_DATE = new Date().toISOString();
+export const BUILD_VERSION = "1.20250827.1730"; // This will be auto-updated during build for cache busting
 
 // Función para obtener información de la versión
 export function getVersionInfo() {
   return {
-    version: APP_VERSION,
+    version: APP_VERSION, // User-facing version (from package.json)
+    buildVersion: BUILD_VERSION, // Internal build version for cache busting
     buildDate: BUILD_DATE,
     userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
     isPWA:

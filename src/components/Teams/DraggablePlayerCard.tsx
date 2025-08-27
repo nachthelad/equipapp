@@ -81,7 +81,7 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
       transition={{ delay: playerIndex * 0.05 }}
       className={`
         group relative flex items-center justify-between p-3 rounded-lg 
-        transition-all duration-200 cursor-move
+        transition-all duration-200 cursor-move touch-manipulation
         ${isOver && !isDragging ? "bg-blue-50 border-2 border-blue-300 border-dashed" : "bg-gray-50 border-2 border-transparent"}
         ${isDragging ? "opacity-50 shadow-lg scale-105" : ""}
         ${isDragOverlay ? "shadow-2xl rotate-2 scale-110 bg-white border-blue-300" : ""}
@@ -89,9 +89,15 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
       `}
       {...attributes}
       {...listeners}
+      onTouchStart={(e) => {
+        // Prevent scrolling when starting a drag on mobile
+        if (listeners?.onTouchStart) {
+          e.preventDefault();
+        }
+      }}
     >
       {/* Drag handle */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 mr-2">
+      <div className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 touch:opacity-100 transition-opacity duration-200 mr-2">
         <GripVertical className="w-4 h-4 text-gray-400" />
       </div>
 
@@ -117,10 +123,15 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="absolute inset-0 bg-blue-100/50 rounded-lg flex items-center justify-center"
+          className="absolute inset-0 bg-blue-100/70 rounded-lg flex items-center justify-center backdrop-blur-sm"
         >
-          <div className="text-blue-600 text-sm font-medium">
+          <div className="text-blue-700 text-xs font-semibold text-center px-2">
             Soltar para intercambiar
+            {player.position !== "Jugador" && (
+              <div className="text-blue-600 text-xs opacity-80">
+                Adoptará posición: {player.position}
+              </div>
+            )}
           </div>
         </motion.div>
       )}

@@ -55,7 +55,8 @@ export function UpdateSettings() {
           <div className="space-y-2">
             <h4 className="font-semibold text-gray-800">Información de la Aplicación</h4>
             <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 space-y-1">
-              <p>Versión actual: <span className="font-medium">{currentVersion}</span></p>
+              <p>Versión: <span className="font-medium">v{currentVersion}</span></p>
+              <p>Build: <span className="font-mono text-xs">{versionInfo.buildVersion}</span></p>
               <p>
                 Fecha de compilación:{" "}
                 <span className="font-medium">{new Date(versionInfo.buildDate).toLocaleDateString()}</span>
