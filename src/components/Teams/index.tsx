@@ -13,16 +13,16 @@ import { Shuffle, Copy, Send, Trophy, Users } from "lucide-react";
 import { BottomNavigation } from "@/components/ui/BottomNavigation";
 import { shuffle } from "lodash";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { 
-  DndContext, 
-  DragOverlay, 
-  closestCenter, 
-  DragStartEvent, 
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  DragStartEvent,
   DragEndEvent,
   PointerSensor,
   TouchSensor,
   useSensor,
-  useSensors
+  useSensors,
 } from "@dnd-kit/core";
 import { usePlayerSwap, type PlayerSwapData } from "@/hooks/usePlayerSwap";
 import { DraggablePlayerCard } from "./DraggablePlayerCard";
@@ -43,7 +43,9 @@ function Teams({
     teamOne: initialTeamOne,
     teamTwo: initialTeamTwo,
   });
-  const [activePlayer, setActivePlayer] = useState<PlayerWithPosition | null>(null);
+  const [activePlayer, setActivePlayer] = useState<PlayerWithPosition | null>(
+    null
+  );
 
   // Use ref to track if this is the first render
   const isFirstRender = useRef(true);
@@ -141,12 +143,15 @@ function Teams({
   }, [teams]);
 
   // Player swap functionality
-  const handleTeamSwap = useCallback((newTeamOne: PlayerWithPosition[], newTeamTwo: PlayerWithPosition[]) => {
-    setTeams({
-      teamOne: newTeamOne,
-      teamTwo: newTeamTwo,
-    });
-  }, []);
+  const handleTeamSwap = useCallback(
+    (newTeamOne: PlayerWithPosition[], newTeamTwo: PlayerWithPosition[]) => {
+      setTeams({
+        teamOne: newTeamOne,
+        teamTwo: newTeamTwo,
+      });
+    },
+    []
+  );
 
   const { swapPlayers, canSwap, getPlayerTeamAndIndex } = usePlayerSwap({
     teamOne: teams.teamOne,
@@ -174,61 +179,71 @@ function Teams({
     const { active } = event;
     const player = active.data.current?.player as PlayerWithPosition;
     setActivePlayer(player);
-    
+
     // Prevent body scrolling during drag on mobile
-    document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
   }, []);
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    setActivePlayer(null);
-    
-    // Restore body scrolling after drag
-    document.body.style.overflow = '';
-    document.body.style.touchAction = '';
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActivePlayer(null);
 
-    if (!over) return;
+      // Restore body scrolling after drag
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
 
-    const draggedData = active.data.current;
-    const droppedData = over.data.current;
+      if (!over) return;
 
-    if (!draggedData || !droppedData) return;
+      const draggedData = active.data.current;
+      const droppedData = over.data.current;
 
-    const draggedPlayer = draggedData.player as PlayerWithPosition;
-    const targetPlayer = droppedData.player as PlayerWithPosition;
+      if (!draggedData || !droppedData) return;
 
-    // Don't swap with self
-    if (draggedPlayer.name === targetPlayer.name) return;
+      const draggedPlayer = draggedData.player as PlayerWithPosition;
+      const targetPlayer = droppedData.player as PlayerWithPosition;
 
-    // Get player positions
-    const draggedPos = getPlayerTeamAndIndex(`${draggedPlayer.name}-${draggedPlayer.position}`);
-    const targetPos = getPlayerTeamAndIndex(`${targetPlayer.name}-${targetPlayer.position}`);
+      // Don't swap with self
+      if (draggedPlayer.name === targetPlayer.name) return;
 
-    if (!draggedPos || !targetPos) return;
+      // Get player positions
+      const draggedPos = getPlayerTeamAndIndex(
+        `${draggedPlayer.name}-${draggedPlayer.position}`
+      );
+      const targetPos = getPlayerTeamAndIndex(
+        `${targetPlayer.name}-${targetPlayer.position}`
+      );
 
-    // Check if swap is allowed
-    if (!canSwap(draggedPlayer, targetPlayer, draggedPos.team, targetPos.team)) return;
+      if (!draggedPos || !targetPos) return;
 
-    // Create swap data
-    const swapData: PlayerSwapData = {
-      fromTeam: draggedPos.team,
-      toTeam: targetPos.team,
-      fromIndex: draggedPos.index,
-      toIndex: targetPos.index,
-      draggedPlayer,
-      targetPlayer,
-    };
+      // Check if swap is allowed
+      if (
+        !canSwap(draggedPlayer, targetPlayer, draggedPos.team, targetPos.team)
+      )
+        return;
 
-    swapPlayers(swapData);
-  }, [canSwap, getPlayerTeamAndIndex, swapPlayers]);
+      // Create swap data
+      const swapData: PlayerSwapData = {
+        fromTeam: draggedPos.team,
+        toTeam: targetPos.team,
+        fromIndex: draggedPos.index,
+        toIndex: targetPos.index,
+        draggedPlayer,
+        targetPlayer,
+      };
+
+      swapPlayers(swapData);
+    },
+    [canSwap, getPlayerTeamAndIndex, swapPlayers]
+  );
 
   // Cleanup effect to restore scrolling if component unmounts during drag
   useEffect(() => {
     return () => {
       // Restore scrolling on cleanup
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     };
   }, []);
 
@@ -268,7 +283,7 @@ function Teams({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
-          className="team-card rounded-2xl p-6 shadow-xl"
+          className="team-card rounded-2xl p-3 shadow-xl"
         >
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className={`w-4 h-4 rounded-full ${color}`} />
@@ -296,7 +311,7 @@ function Teams({
 
   const memoizedTeams = useMemo(
     () => (
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-3 md:gap-6">
         <TeamCard
           team={teams.teamOne}
           teamName="EQUIPO NEGRO"
@@ -328,20 +343,20 @@ function Teams({
       >
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
-            <Trophy className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">¡Equipos listos!</h2>
-          <p className="text-white/70 text-center max-w-md mx-auto">
-            Los equipos están balanceados y listos para jugar.
-          </p>
+          <h2 className="text-2xl font-bold text-white mb-2">
+            ¡Equipos listos!
+          </h2>
           <p className="text-white/60 text-sm text-center max-w-md mx-auto">
             📱 Mantené presionado un jugador para arrastrarlo
             {teams.teamOne.length === 8 && teams.teamTwo.length === 8 ? (
-              <span className="block">• Entre equipos: intercambia equipos y posiciones</span>
+              <span className="block">
+                • Entre equipos: intercambia equipos y posiciones
+              </span>
             ) : null}
             {teams.teamOne.length === 8 && teams.teamTwo.length === 8 ? (
-              <span className="block">• Mismo equipo: intercambia solo posiciones</span>
+              <span className="block">
+                • Mismo equipo: intercambia solo posiciones
+              </span>
             ) : (
               <span className="block">• Solo entre equipos diferentes</span>
             )}
@@ -350,7 +365,6 @@ function Teams({
 
         {/* Teams */}
         {memoizedTeams}
-
 
         {/* Back button */}
         <div className="text-center pt-4">
@@ -391,7 +405,8 @@ function Teams({
           icon: <Send className="w-4 h-4" />,
           label: "WhatsApp",
           action: handleShareWhatsApp,
-          className: "bg-green-600 hover:bg-green-700 text-white border-green-600",
+          className:
+            "bg-green-600 hover:bg-green-700 text-white border-green-600",
         }}
       />
     </DndContext>
