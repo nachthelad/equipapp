@@ -22,7 +22,7 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
 }: DraggablePlayerCardProps) {
   const playerId = `${player.name}-${player.position}`;
   const dropId = `${teamName}-${playerIndex}`;
-  
+
   const {
     attributes,
     listeners,
@@ -39,10 +39,7 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
     },
   });
 
-  const {
-    setNodeRef: setDroppableRef,
-    isOver,
-  } = useDroppable({
+  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
     id: dropId,
     data: {
       type: "player-slot",
@@ -80,11 +77,19 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: playerIndex * 0.05 }}
       className={`
-        group relative flex items-center justify-between p-3 rounded-lg 
-        transition-all duration-200 cursor-move touch-manipulation
-        ${isOver && !isDragging ? "bg-blue-50 border-2 border-blue-300 border-dashed" : "bg-gray-50 border-2 border-transparent"}
+        group relative flex items-center justify-between p-2 md:p-3 rounded-lg 
+        transition-all duration-200 cursor-move touch-manipulation w-full
+        ${
+          isOver && !isDragging
+            ? "bg-blue-50 border-2 border-blue-300 border-dashed"
+            : "bg-gray-50 border-2 border-transparent"
+        }
         ${isDragging ? "opacity-50 shadow-lg scale-105" : ""}
-        ${isDragOverlay ? "shadow-2xl rotate-2 scale-110 bg-white border-blue-300" : ""}
+        ${
+          isDragOverlay
+            ? "shadow-2xl rotate-2 scale-110 bg-white border-blue-300"
+            : ""
+        }
         ${className}
       `}
       {...attributes}
@@ -103,10 +108,10 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
 
       {/* Player info */}
       <div className="flex-1 flex items-center justify-between">
-        <span className="font-medium text-gray-800 truncate">
+        <span className="font-medium text-gray-800 truncate text-xs md:text-sm">
           {player.name.replace("🧤", "")}
         </span>
-        
+
         {player.position !== "Jugador" && (
           <span
             className={`px-2 py-1 rounded-full text-xs font-medium border ${
