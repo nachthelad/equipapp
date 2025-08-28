@@ -20,6 +20,7 @@ import { UpdateButton } from "@/components/ui/UpdateButton";
 import { DonationButton } from "@/components/ui/DonationButton";
 import { BottomNavigation } from "@/components/ui/BottomNavigation";
 import { pasteFromClipboard } from "@/utils/teamActions";
+import { useManualUpdate } from "@/hooks/useManualUpdate";
 
 export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   const {
@@ -37,6 +38,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
 
   const [openDialog, setOpenDialog] = useState(false);
   const { toast } = useToast();
+  const { currentVersion } = useManualUpdate();
   const watchedPlayers = watch("players");
   const playerCount = watchedPlayers
     .split(/\r?\n/)
@@ -177,6 +179,13 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
           </div>
 
         </form>
+        
+        {/* Version display at bottom center */}
+        <div className="text-center mt-6 pt-4 border-t border-white/20">
+          <div className="text-white/50 text-xs">
+            v{currentVersion}
+          </div>
+        </div>
       </div>
 
       <InfoDialog open={openDialog} handleClose={() => setOpenDialog(false)} />

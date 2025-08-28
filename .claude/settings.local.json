@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npx tsc:*)",
       "Bash(npm install:*)",
-      "Bash(timeout 10 npm run dev)"
+      "Bash(timeout 10 npm run dev)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 5 npm run dev)"
     ],
     "deny": [],
     "ask": []

@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import type {
   PlayerWithPosition,
   PlayerPosition,
@@ -74,59 +73,70 @@ export default function PositionSelection({
   const positionCounts = getPositionCounts(playersWithPositions);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-2xl mx-auto pb-20"
-    >
-      {/* Header */}
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Seleccioná las posiciones
-        </h2>
-        <p className="text-white/70">Necesitás 2 arqueros y 6 defensores</p>
-      </div>
+    <div className="max-w-2xl mx-auto pb-20">
+      {/* Fixed Position counters with title */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="fixed top-20 inset-x-0 mx-auto z-50 w-full max-w-2xl px-4"
+      >
+        <div className="bg-gray-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/20 p-4">
+          {/* Title inside counter */}
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold text-white mb-1">
+              Seleccioná las posiciones
+            </h2>
+          </div>
 
-      {/* Position counters */}
-      <div className="grid grid-cols-4 gap-3 mb-8 p-4 bg-white/10 backdrop-blur-md rounded-xl">
-        {(["Arco", "Def", "Medio", "Del"] as PlayerPosition[]).map(
-          (position) => (
-            <div key={position} className="text-center">
-              <div
-                className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center text-white ${
-                  position === "Arco"
-                    ? "bg-yellow-500"
-                    : position === "Def"
-                    ? "bg-blue-500"
-                    : position === "Medio"
-                    ? "bg-green-500"
-                    : "bg-red-500"
-                }`}
-              >
-                {typeof positionIcons[position] === "string"
-                  ? positionIcons[position]
-                  : positionIcons[position]}
-              </div>
-              <div className="text-white text-sm font-medium">{position}</div>
-              <div
-                className={`text-sm font-bold ${
-                  (position === "Arco" && positionCounts[position] === 2) ||
-                  (position === "Def" && positionCounts[position] === 6)
-                    ? "text-green-300"
-                    : "text-white/70"
-                }`}
-              >
-                {positionCounts[position]}
-                {position === "Arco" && "/2"}
-                {position === "Def" && "/6"}
-              </div>
-            </div>
-          )
-        )}
-      </div>
+          {/* Position counters */}
+          <div className="grid grid-cols-4 gap-3">
+            {(["Arco", "Def", "Medio", "Del"] as PlayerPosition[]).map(
+              (position) => (
+                <div key={position} className="text-center">
+                  <div
+                    className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center text-white ${
+                      position === "Arco"
+                        ? "bg-yellow-500"
+                        : position === "Def"
+                        ? "bg-blue-500"
+                        : position === "Medio"
+                        ? "bg-green-500"
+                        : "bg-red-500"
+                    }`}
+                  >
+                    {typeof positionIcons[position] === "string"
+                      ? positionIcons[position]
+                      : positionIcons[position]}
+                  </div>
+                  <div className="text-white text-sm font-medium">
+                    {position}
+                  </div>
+                  <div
+                    className={`text-sm font-bold ${
+                      (position === "Arco" && positionCounts[position] === 2) ||
+                      (position === "Def" && positionCounts[position] === 6)
+                        ? "text-green-300"
+                        : "text-white/70"
+                    }`}
+                  >
+                    {positionCounts[position]}
+                    {position === "Arco" && "/2"}
+                    {position === "Def" && "/6"}
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      </motion.div>
 
       {/* Players list - No card wrapper */}
-      <div className="space-y-4 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="space-y-4 overflow-y-auto pt-36"
+      >
         {playersWithPositions.map((player, index) => (
           <motion.div
             key={index}
@@ -164,7 +174,7 @@ export default function PositionSelection({
             </div>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <BottomNavigation
         centerButton={{
@@ -174,6 +184,6 @@ export default function PositionSelection({
           disabled: positionCounts.Arco !== 2 || positionCounts.Def !== 6,
         }}
       />
-    </motion.div>
+    </div>
   );
 }
