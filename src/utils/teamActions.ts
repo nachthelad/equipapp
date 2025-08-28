@@ -42,3 +42,17 @@ export function shareViaWhatsApp(text: string): void {
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(whatsappUrl, "_blank");
 }
+
+export async function pasteFromClipboard(): Promise<string> {
+  if (!navigator.clipboard) {
+    // Fallback - cannot read clipboard without modern API
+    throw new Error("El portapapeles no es accesible en este navegador");
+  }
+
+  try {
+    const text = await navigator.clipboard.readText();
+    return text;
+  } catch (err) {
+    throw new Error("No se pudo acceder al portapapeles");
+  }
+}
