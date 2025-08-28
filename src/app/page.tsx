@@ -1,14 +1,16 @@
 "use client";
-import { useState, lazy, Suspense, useCallback, useMemo } from "react";
+import { lazy, Suspense, useCallback, useMemo } from "react";
 import Image from "next/image";
 import type { TeamsData } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
 import { useNavigation } from "@/hooks/useNavigation";
 import { useTeamGeneration } from "@/hooks/useTeamGeneration";
 import { useKeyboardShortcuts, useGlobalKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useTeamStore } from "@/store/teamStore";
+import { useAppStore } from "@/store/appStore";
 import { validateGoalkeepers } from "@/utils/playerValidation";
-import { Toaster } from "@/components/ui/toaster";
+import { ToastProvider } from "@/components/ui/ToastProvider";
+import { HydrationProvider } from "@/components/HydrationProvider";
 import { PlayerFormSkeleton } from "@/components/ui/PlayerFormSkeleton";
 import { PositionSelectionSkeleton } from "@/components/ui/PositionSelectionSkeleton";
 import { StepIndicator } from "@/components/ui/StepIndicator";
@@ -21,26 +23,26 @@ const PositionSelection = lazy(() => import("@/components/PositionSelection"));
 // Import Teams directly to prevent re-rendering issues
 import Teams from "@/components/Teams";
 
+// Force dynamic rendering to avoid SSR issues with Zustand
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
-  const [playerNames, setPlayerNames] = useState<string[]>([]);
-  const { toast } = useToast();
+  const { players, setPlayers, setTeamsData, resetTeams } = useTeamStore();
+  const { addToast } = useAppStore();
   const { step, goToStep, goToStart } = useNavigation();
   const {
-    teamOne,
-    teamTwo,
     generateSimpleTeams,
-    resetTeams,
     setTeamOne,
     setTeamTwo,
   } = useTeamGeneration();
 
   const handleFormSubmit = useCallback(
     (names: string[]) => {
-      setPlayerNames(names);
+      setPlayers(names);
 
       const goalkeeperValidation = validateGoalkeepers(names);
       if (!goalkeeperValidation.isValid) {
-        toast({
+        addToast({
           title: "Error",
           description: goalkeeperValidation.message,
           variant: "destructive",
@@ -49,41 +51,42 @@ export default function Home() {
       }
 
       if (names.length !== 16) {
-        generateSimpleTeams(names);
+        const generatedTeams = generateSimpleTeams(names);
+        setTeamsData(generatedTeams);
         goToStep(3);
       } else {
         goToStep(2);
       }
     },
-    [generateSimpleTeams, goToStep, toast]
+    [setPlayers, generateSimpleTeams, goToStep, addToast, setTeamsData]
   );
 
   const handlePositionSelection = useCallback(
     ({ teamOne: newTeamOne, teamTwo: newTeamTwo }: TeamsData) => {
       setTeamOne(newTeamOne);
       setTeamTwo(newTeamTwo);
+      setTeamsData({ teamOne: newTeamOne, teamTwo: newTeamTwo });
       goToStep(3);
     },
-    [setTeamOne, setTeamTwo, goToStep]
+    [setTeamOne, setTeamTwo, setTeamsData, goToStep]
   );
 
   const handleGoBack = useCallback(() => {
     if (step === 2) {
       goToStart();
     } else if (step === 3) {
-      if (playerNames.length === 16) {
+      if (players.length === 16) {
         goToStep(2);
       } else {
         goToStart();
       }
     }
-  }, [step, playerNames.length, goToStart, goToStep]);
+  }, [step, players.length, goToStart, goToStep]);
 
   const handleReset = useCallback(() => {
-    goToStart();
-    setPlayerNames([]);
     resetTeams();
-  }, [goToStart, resetTeams]);
+    goToStart();
+  }, [resetTeams, goToStart]);
 
   // Global keyboard shortcuts
   useGlobalKeyboardShortcuts();
@@ -127,7 +130,7 @@ export default function Home() {
         return (
           <Suspense fallback={<PositionSelectionSkeleton />}>
             <PositionSelection
-              playerNames={playerNames}
+              playerNames={players}
               onPositionSelection={handlePositionSelection}
               onGoBack={goToStart}
             />
@@ -135,16 +138,14 @@ export default function Home() {
         );
       case 3:
         return (
-          <Teams teamOne={teamOne} teamTwo={teamTwo} onGoBack={handleReset} />
+          <Teams onGoBack={handleReset} />
         );
       default:
         return null;
     }
   }, [
     step,
-    playerNames,
-    teamOne,
-    teamTwo,
+    players,
     handleFormSubmit,
     handlePositionSelection,
     handleReset,
@@ -152,55 +153,58 @@ export default function Home() {
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start p-4 pt-8">
-      <div className="w-full max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
-          {step === 1 && (
-            <div className="space-y-4">
-              <Image
-                src="/logo.png"
-                alt="Logo Equipapp"
-                width={280}
-                height={170}
-                className="mx-auto"
-                priority
-              />
-            </div>
-          )}
-
-          {step > 1 && (
-            <div className="flex items-center justify-between mb-6">
-              <Button
-                variant="ghost"
-                onClick={handleGoBack}
-                className="text-white hover:bg-white/10 flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Volver
-              </Button>
-              <StepIndicator currentStep={step} totalSteps={3} />
-              <div className="w-8"></div>
-            </div>
-          )}
-        </motion.div>
-
-        <AnimatePresence mode="wait">
+    <HydrationProvider>
+      <ToastProvider>
+        <div className="min-h-screen flex flex-col items-center justify-start p-4 pt-8">
+        <div className="w-full max-w-4xl mx-auto">
           <motion.div
-            key={step}
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 50 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-8"
           >
-            {renderCurrentStep}
+            {step === 1 && (
+              <div className="space-y-4">
+                <Image
+                  src="/logo.png"
+                  alt="Logo Equipapp"
+                  width={280}
+                  height={170}
+                  className="mx-auto"
+                  priority
+                />
+              </div>
+            )}
+
+            {step > 1 && (
+              <div className="flex items-center justify-between mb-6">
+                <Button
+                  variant="ghost"
+                  onClick={handleGoBack}
+                  className="text-white hover:bg-white/10 flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Volver
+                </Button>
+                <StepIndicator currentStep={step} totalSteps={3} />
+                <div className="w-8"></div>
+              </div>
+            )}
           </motion.div>
-        </AnimatePresence>
-      </div>
-      <Toaster />
-    </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              transition={{ duration: 0.3 }}
+            >
+              {renderCurrentStep}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        </div>
+      </ToastProvider>
+    </HydrationProvider>
   );
 }

@@ -1,17 +1,15 @@
 "use client";
-import { useState, useCallback, memo, useRef, useMemo, useEffect } from "react";
+import { useState, useCallback, memo, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import type { PlayerWithPosition } from "@/types";
 import { motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
 import {
   formatTeamsForSharing,
   copyToClipboard,
   shareViaWhatsApp,
 } from "@/utils/teamActions";
-import { Shuffle, Copy, Send, Trophy, Users } from "lucide-react";
+import { Shuffle, Copy, Send, Users } from "lucide-react";
 import { BottomNavigation } from "@/components/ui/BottomNavigation";
-import { shuffle } from "lodash";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import {
   DndContext,
@@ -26,116 +24,50 @@ import {
 } from "@dnd-kit/core";
 import { usePlayerSwap, type PlayerSwapData } from "@/hooks/usePlayerSwap";
 import { DraggablePlayerCard } from "./DraggablePlayerCard";
+import { useTeamStore } from "@/store/teamStore";
+import { useAppStore } from "@/store/appStore";
 
 interface TeamsProps {
-  teamOne: PlayerWithPosition[];
-  teamTwo: PlayerWithPosition[];
   onGoBack: () => void;
 }
 
-function Teams({
-  teamOne: initialTeamOne,
-  teamTwo: initialTeamTwo,
-  onGoBack,
-}: TeamsProps) {
-  const { toast } = useToast();
-  const [teams, setTeams] = useState({
-    teamOne: initialTeamOne,
-    teamTwo: initialTeamTwo,
-  });
+function Teams({ onGoBack }: TeamsProps) {
+  const { teamsData, redistributeTeams, updateTeams } = useTeamStore();
+  const { addToast } = useAppStore();
   const [activePlayer, setActivePlayer] = useState<PlayerWithPosition | null>(
     null
   );
 
-  // Use ref to track if this is the first render
-  const isFirstRender = useRef(true);
-
-  // Only update on first render or when props actually change
-  if (isFirstRender.current) {
-    setTeams({
-      teamOne: initialTeamOne,
-      teamTwo: initialTeamTwo,
-    });
-    isFirstRender.current = false;
-  }
+  // Get teams from store
+  const teams = teamsData ? {
+    teamOne: teamsData.teamOne,
+    teamTwo: teamsData.teamTwo,
+  } : { teamOne: [], teamTwo: [] };
 
   const handleRedistribute = useCallback(() => {
-    // Redistribuir los equipos usando los props originales para evitar re-renders
-    const allPlayers = [...initialTeamOne, ...initialTeamTwo];
-
-    // Use lodash shuffle for better randomization
-    const shuffledPlayers = shuffle([...allPlayers]);
-
-    const goalkeepers = shuffledPlayers.filter(
-      (player) => player.position === "Arco"
-    );
-    const defenders = shuffledPlayers.filter(
-      (player) => player.position === "Def"
-    );
-    const midfielders = shuffledPlayers.filter(
-      (player) => player.position === "Medio"
-    );
-    const forwards = shuffledPlayers.filter(
-      (player) => player.position === "Del"
-    );
-    const players = shuffledPlayers.filter(
-      (player) => player.position === "Jugador"
-    );
-
-    const positionOrder = ["Arco", "Def", "Medio", "Del", "Jugador"];
-    const comparePositions = (a: PlayerWithPosition, b: PlayerWithPosition) => {
-      return (
-        positionOrder.indexOf(a.position) - positionOrder.indexOf(b.position)
-      );
-    };
-
-    const newTeamOne: PlayerWithPosition[] = [];
-    const newTeamTwo: PlayerWithPosition[] = [];
-
-    const allPlayersOrdered = [
-      ...goalkeepers,
-      ...defenders,
-      ...midfielders,
-      ...forwards,
-      ...players,
-    ];
-    allPlayersOrdered.forEach((player, index) => {
-      if (index % 2 === 0) newTeamOne.push(player);
-      else newTeamTwo.push(player);
-    });
-
-    newTeamOne.sort(comparePositions);
-    newTeamTwo.sort(comparePositions);
-
-    // Update state in a single batch to prevent multiple re-renders
-    setTeams({
-      teamOne: newTeamOne,
-      teamTwo: newTeamTwo,
-    });
-
-    // Show toast immediately
-    toast({
+    redistributeTeams();
+    addToast({
       title: "¡Equipos redistribuidos!",
       description: "Los equipos han sido reorganizados",
     });
-  }, [initialTeamOne, initialTeamTwo, toast]);
+  }, [redistributeTeams, addToast]);
 
   const handleCopyTeams = useCallback(async () => {
     try {
       const formattedText = formatTeamsForSharing(teams.teamOne, teams.teamTwo);
       await copyToClipboard(formattedText);
-      toast({
+      addToast({
         title: "¡Copiado!",
         description: "Los equipos se copiaron al portapapeles",
       });
     } catch (error) {
-      toast({
+      addToast({
         title: "Error",
         description: "No se pudo copiar al portapapeles",
         variant: "destructive",
       });
     }
-  }, [teams, toast]);
+  }, [teams, addToast]);
 
   const handleShareWhatsApp = useCallback(() => {
     const formattedText = formatTeamsForSharing(teams.teamOne, teams.teamTwo);
@@ -145,12 +77,9 @@ function Teams({
   // Player swap functionality
   const handleTeamSwap = useCallback(
     (newTeamOne: PlayerWithPosition[], newTeamTwo: PlayerWithPosition[]) => {
-      setTeams({
-        teamOne: newTeamOne,
-        teamTwo: newTeamTwo,
-      });
+      updateTeams(newTeamOne, newTeamTwo);
     },
-    []
+    [updateTeams]
   );
 
   const { swapPlayers, canSwap, getPlayerTeamAndIndex } = usePlayerSwap({
@@ -328,6 +257,17 @@ function Teams({
     ),
     [teams.teamOne, teams.teamTwo]
   );
+
+  // If no teams data, redirect back (after all hooks)
+  useEffect(() => {
+    if (!teamsData) {
+      onGoBack();
+    }
+  }, [teamsData, onGoBack]);
+
+  if (!teamsData) {
+    return null;
+  }
 
   return (
     <DndContext
