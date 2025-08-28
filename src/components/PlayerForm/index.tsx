@@ -13,10 +13,13 @@ import {
   validatePlayerCount,
   validateDuplicateNames,
 } from "@/utils/playerValidation";
-import { Users, HelpCircle, ArrowRight } from "lucide-react";
+import { Users, HelpCircle, ArrowRight, Clipboard, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { UpdateButton } from "@/components/ui/UpdateButton";
+import { DonationButton } from "@/components/ui/DonationButton";
+import { BottomNavigation } from "@/components/ui/BottomNavigation";
+import { pasteFromClipboard } from "@/utils/teamActions";
 
 export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   const {
@@ -24,6 +27,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
     handleSubmit,
     setError,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -74,6 +78,31 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
     onFormSubmit(cleanedLines);
   };
 
+  const handlePaste = async () => {
+    try {
+      const text = await pasteFromClipboard();
+      setValue("players", text);
+      toast({
+        title: "¡Pegado exitoso!",
+        description: "Los jugadores se agregaron desde el portapapeles",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo pegar desde el portapapeles",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleClear = () => {
+    setValue("players", "");
+    toast({
+      title: "Lista limpiada",
+      description: "La lista de jugadores ha sido borrada",
+    });
+  };
+
   // Keyboard shortcuts for form
   useKeyboardShortcuts([
     {
@@ -92,7 +121,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-md mx-auto"
+      className="max-w-md mx-auto pb-20"
     >
       <div className="glass rounded-2xl p-8 shadow-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -113,6 +142,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
               </Label>
               <div className="flex items-center gap-1">
                 <UpdateButton />
+                <DonationButton />
                 <Button
                   type="button"
                   variant="ghost"
@@ -146,18 +176,34 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
             <PlayerCounter count={playerCount} />
           </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-white text-purple-700 hover:bg-white/90 font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
-            disabled={playerCount === 0}
-          >
-            Crear equipos
-            <ArrowRight className="w-4 h-4" />
-          </Button>
         </form>
       </div>
 
       <InfoDialog open={openDialog} handleClose={() => setOpenDialog(false)} />
+      
+      <BottomNavigation
+        leftButton={{
+          icon: <Clipboard className="w-4 h-4" />,
+          label: "Pegar",
+          action: handlePaste,
+        }}
+        centerButton={{
+          icon: <ArrowRight className="w-4 h-4" />,
+          label: "Crear equipos",
+          action: () => {
+            if (playerCount > 0) {
+              handleSubmit(onSubmit)();
+            }
+          },
+          disabled: playerCount === 0,
+        }}
+        rightButton={{
+          icon: <X className="w-4 h-4" />,
+          label: "Limpiar",
+          action: handleClear,
+          disabled: playerCount === 0,
+        }}
+      />
     </motion.div>
   );
 }

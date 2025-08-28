@@ -10,6 +10,7 @@ import {
   shareViaWhatsApp,
 } from "@/utils/teamActions";
 import { Shuffle, Copy, Send, Trophy, Users } from "lucide-react";
+import { BottomNavigation } from "@/components/ui/BottomNavigation";
 import { shuffle } from "lodash";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { 
@@ -323,7 +324,7 @@ function Teams({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto space-y-6"
+        className="max-w-4xl mx-auto space-y-6 pb-20"
       >
         {/* Header */}
         <div className="text-center">
@@ -350,34 +351,6 @@ function Teams({
         {/* Teams */}
         {memoizedTeams}
 
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Button
-          onClick={handleRedistribute}
-          variant="outline"
-          className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center gap-2"
-        >
-          <Shuffle className="w-4 h-4" />
-          Volver a sortear
-        </Button>
-
-        <Button
-          onClick={handleCopyTeams}
-          variant="outline"
-          className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center gap-2"
-        >
-          <Copy className="w-4 h-4" />
-          Copiar
-        </Button>
-
-        <Button
-          onClick={handleShareWhatsApp}
-          className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-        >
-          <Send className="w-4 h-4" />
-          Enviar por WhatsApp
-        </Button>
-      </div>
 
         {/* Back button */}
         <div className="text-center pt-4">
@@ -402,6 +375,25 @@ function Teams({
           />
         ) : null}
       </DragOverlay>
+
+      <BottomNavigation
+        leftButton={{
+          icon: <Copy className="w-4 h-4" />,
+          label: "Copiar",
+          action: handleCopyTeams,
+        }}
+        centerButton={{
+          icon: <Shuffle className="w-4 h-4" />,
+          label: "Volver a sortear",
+          action: handleRedistribute,
+        }}
+        rightButton={{
+          icon: <Send className="w-4 h-4" />,
+          label: "WhatsApp",
+          action: handleShareWhatsApp,
+          className: "bg-green-600 hover:bg-green-700 text-white border-green-600",
+        }}
+      />
     </DndContext>
   );
 }
