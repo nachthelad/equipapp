@@ -71,28 +71,40 @@ export const useTeamStore = create<TeamState>()(
           const allPlayers = [...teamsData.teamOne, ...teamsData.teamTwo]
           const shuffledPlayers = shuffle([...allPlayers])
 
-          // Group by positions
-          const goalkeepers = shuffledPlayers.filter(p => p.position === 'Arco')
-          const defenders = shuffledPlayers.filter(p => p.position === 'Def')
-          const midfielders = shuffledPlayers.filter(p => p.position === 'Medio')
-          const forwards = shuffledPlayers.filter(p => p.position === 'Del')
-          const players = shuffledPlayers.filter(p => p.position === 'Jugador')
+          const grouped: Record<string, PlayerWithPosition[]> = {
+            Arco: [],
+            Def: [],
+            Medio: [],
+            Del: [],
+            Jugador: [],
+          }
+          for (let i = 0; i < shuffledPlayers.length; i++) {
+            const player = shuffledPlayers[i]
+            if (grouped[player.position]) {
+              grouped[player.position].push(player)
+            }
+          }
 
-          const positionOrder = ['Arco', 'Def', 'Medio', 'Del', 'Jugador']
+          const positionRank: Record<string, number> = {
+            Arco: 0,
+            Def: 1,
+            Medio: 2,
+            Del: 3,
+            Jugador: 4,
+          }
           const comparePositions = (a: PlayerWithPosition, b: PlayerWithPosition) => {
-            return positionOrder.indexOf(a.position) - positionOrder.indexOf(b.position)
+            return (positionRank[a.position] ?? 5) - (positionRank[b.position] ?? 5)
           }
 
           const newTeamOne: PlayerWithPosition[] = []
           const newTeamTwo: PlayerWithPosition[] = []
 
-          // Distribute players alternately
           const allPlayersOrdered = [
-            ...goalkeepers,
-            ...defenders,
-            ...midfielders,
-            ...forwards,
-            ...players,
+            ...grouped.Arco,
+            ...grouped.Def,
+            ...grouped.Medio,
+            ...grouped.Del,
+            ...grouped.Jugador,
           ]
 
           allPlayersOrdered.forEach((player, index) => {
@@ -100,7 +112,6 @@ export const useTeamStore = create<TeamState>()(
             else newTeamTwo.push(player)
           })
 
-          // Sort teams by position
           newTeamOne.sort(comparePositions)
           newTeamTwo.sort(comparePositions)
 
@@ -139,9 +150,15 @@ export const useTeamStore = create<TeamState>()(
           }
 
           // Sort teams by position after swap
-          const positionOrder = ['Arco', 'Def', 'Medio', 'Del', 'Jugador']
+          const positionRank: Record<string, number> = {
+            Arco: 0,
+            Def: 1,
+            Medio: 2,
+            Del: 3,
+            Jugador: 4,
+          }
           const comparePositions = (a: PlayerWithPosition, b: PlayerWithPosition) => {
-            return positionOrder.indexOf(a.position) - positionOrder.indexOf(b.position)
+            return (positionRank[a.position] ?? 5) - (positionRank[b.position] ?? 5)
           }
 
           newTeamOne.sort(comparePositions)
