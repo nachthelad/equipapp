@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 
 interface KeyboardShortcut {
   key: string;
@@ -11,8 +11,10 @@ interface KeyboardShortcut {
 }
 
 export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
+  const shortcutsRef = useRef(shortcuts);
+  shortcutsRef.current = shortcuts;
+
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
-    // Don't trigger shortcuts when user is typing in form fields
     if (
       event.target instanceof HTMLInputElement ||
       event.target instanceof HTMLTextAreaElement ||
@@ -22,7 +24,7 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
       return;
     }
 
-    const shortcut = shortcuts.find((s) => {
+    const shortcut = shortcutsRef.current.find((s) => {
       return (
         s.key.toLowerCase() === event.key.toLowerCase() &&
         (s.ctrlKey ?? false) === (event.ctrlKey || event.metaKey) &&
@@ -35,7 +37,7 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
       event.preventDefault();
       shortcut.action();
     }
-  }, [shortcuts]);
+  }, []);
 
   useEffect(() => {
     document.addEventListener("keydown", handleKeyPress);

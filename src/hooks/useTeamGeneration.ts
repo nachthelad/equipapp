@@ -7,7 +7,6 @@ export function useTeamGeneration() {
   const [teamTwo, setTeamTwo] = useState<PlayerWithPosition[]>([]);
 
   const generateBalancedTeams = (players: PlayerWithPosition[]) => {
-    // Use Fisher-Yates shuffle for better randomization
     const shuffledPlayers = [...players];
     for (let i = shuffledPlayers.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -17,39 +16,40 @@ export function useTeamGeneration() {
       ];
     }
 
-    const goalkeepers = shuffledPlayers.filter(
-      (player) => player.position === "Arco"
-    );
-    const defenders = shuffledPlayers.filter(
-      (player) => player.position === "Def"
-    );
-    const midfielders = shuffledPlayers.filter(
-      (player) => player.position === "Medio"
-    );
-    const forwards = shuffledPlayers.filter(
-      (player) => player.position === "Del"
-    );
-    const regularPlayers = shuffledPlayers.filter(
-      (player) => player.position === "Jugador"
-    );
+    const grouped: Record<string, PlayerWithPosition[]> = {
+      Arco: [],
+      Def: [],
+      Medio: [],
+      Del: [],
+      Jugador: [],
+    };
+    for (let i = 0; i < shuffledPlayers.length; i++) {
+      const player = shuffledPlayers[i];
+      if (grouped[player.position]) {
+        grouped[player.position].push(player);
+      }
+    }
 
-    const positionOrder = ["Arco", "Def", "Medio", "Del", "Jugador"];
+    const positionRank: Record<string, number> = {
+      Arco: 0,
+      Def: 1,
+      Medio: 2,
+      Del: 3,
+      Jugador: 4,
+    };
     const comparePositions = (a: PlayerWithPosition, b: PlayerWithPosition) => {
-      return (
-        positionOrder.indexOf(a.position) - positionOrder.indexOf(b.position)
-      );
+      return (positionRank[a.position] ?? 5) - (positionRank[b.position] ?? 5);
     };
 
     const newTeamOne: PlayerWithPosition[] = [];
     const newTeamTwo: PlayerWithPosition[] = [];
 
-    // Distribute players evenly
     const allPlayers = [
-      ...goalkeepers,
-      ...defenders,
-      ...midfielders,
-      ...forwards,
-      ...regularPlayers,
+      ...grouped.Arco,
+      ...grouped.Def,
+      ...grouped.Medio,
+      ...grouped.Del,
+      ...grouped.Jugador,
     ];
     allPlayers.forEach((player, index) => {
       if (index % 2 === 0) {
@@ -59,7 +59,6 @@ export function useTeamGeneration() {
       }
     });
 
-    // Sort by position
     newTeamOne.sort(comparePositions);
     newTeamTwo.sort(comparePositions);
 
@@ -70,9 +69,8 @@ export function useTeamGeneration() {
   };
 
   const generateSimpleTeams = (playerNames: string[]) => {
-    const goalkeepers = playerNames.filter((name) => name.includes("🧤"));
+    const goalkeeperSet = new Set(playerNames.filter((name) => name.includes("🧤")));
     const otherPlayers = playerNames.filter((name) => !name.includes("🧤"));
-    // Use Fisher-Yates shuffle for better randomization
     const shuffledOtherPlayers = [...otherPlayers];
     for (let i = shuffledOtherPlayers.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -82,9 +80,10 @@ export function useTeamGeneration() {
       ];
     }
 
-    let teamOneNames = [];
-    let teamTwoNames = [];
+    let teamOneNames: string[] = [];
+    let teamTwoNames: string[] = [];
 
+    const goalkeepers = Array.from(goalkeeperSet);
     if (goalkeepers.length === 2) {
       teamOneNames.push(goalkeepers[0]);
       teamTwoNames.push(goalkeepers[1]);
@@ -100,14 +99,14 @@ export function useTeamGeneration() {
     const teamOneWithPositions: PlayerWithPosition[] = teamOneNames.map(
       (name) => ({
         name,
-        position: name.includes("🧤") ? "Arco" : "Jugador",
+        position: goalkeeperSet.has(name) ? "Arco" : "Jugador",
       })
     );
 
     const teamTwoWithPositions: PlayerWithPosition[] = teamTwoNames.map(
       (name) => ({
         name,
-        position: name.includes("🧤") ? "Arco" : "Jugador",
+        position: goalkeeperSet.has(name) ? "Arco" : "Jugador",
       })
     );
 

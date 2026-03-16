@@ -1,8 +1,8 @@
 "use client";
 import { lazy, Suspense, useCallback, useMemo } from "react";
+import nextDynamic from "next/dynamic";
 import Image from "next/image";
 import type { TeamsData } from "@/types";
-import { AnimatePresence, motion } from "framer-motion";
 import { useNavigation } from "@/hooks/useNavigation";
 import { useTeamGeneration } from "@/hooks/useTeamGeneration";
 import { useKeyboardShortcuts, useGlobalKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -16,6 +16,9 @@ import { PositionSelectionSkeleton } from "@/components/ui/PositionSelectionSkel
 import { StepIndicator } from "@/components/ui/StepIndicator";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const MotionDiv = nextDynamic(() => import("framer-motion").then(mod => mod.motion.div), { ssr: false });
+const AnimatePresence = nextDynamic(() => import("framer-motion").then(mod => mod.AnimatePresence), { ssr: false });
 
 // Lazy loading de componentes
 const PlayerForm = lazy(() => import("@/components/PlayerForm"));
@@ -157,7 +160,7 @@ export default function Home() {
       <ToastProvider>
         <div className="min-h-screen flex flex-col items-center justify-start p-4 pt-8">
         <div className="w-full max-w-4xl mx-auto">
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
@@ -189,10 +192,10 @@ export default function Home() {
                 <div className="w-8"></div>
               </div>
             )}
-          </motion.div>
+          </MotionDiv>
 
           <AnimatePresence mode="wait">
-            <motion.div
+            <MotionDiv
               key={step}
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -200,7 +203,7 @@ export default function Home() {
               transition={{ duration: 0.3 }}
             >
               {renderCurrentStep}
-            </motion.div>
+            </MotionDiv>
           </AnimatePresence>
         </div>
         </div>
