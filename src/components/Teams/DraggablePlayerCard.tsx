@@ -85,7 +85,7 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: playerIndex * 0.05 }}
       className={`
-        group relative flex items-center justify-between p-2 md:p-3 rounded-lg 
+        group relative flex items-center justify-between p-1 md:p-2 rounded-lg 
         transition-all duration-200 cursor-move touch-manipulation w-full select-none
         ${
           isOver && !isDragging

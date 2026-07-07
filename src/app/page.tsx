@@ -157,7 +157,7 @@ export default function Home() {
   return (
     <HydrationProvider>
       <ToastProvider>
-        <div className="h-dvh overflow-hidden flex flex-col items-center justify-start px-5 pt-8">
+        <div className="h-dvh overflow-hidden flex flex-col items-center justify-start px-5 pt-3">
           <div className="w-full max-w-4xl mx-auto flex flex-col flex-1 min-h-0">
             <MotionDiv
               initial={{ opacity: 0, y: -20 }}
