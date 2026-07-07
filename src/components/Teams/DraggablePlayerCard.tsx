@@ -23,8 +23,6 @@ const positionIcons: Record<string, React.ReactElement> = {
 
 export const DraggablePlayerCard = memo(function DraggablePlayerCard({
   player,
-  playerIndex,
-  teamName,
   isSelected = false,
   isAnySelected = false,
   onClick,
