@@ -3,6 +3,7 @@
 import { useToast } from "@/hooks/use-toast";
 import {
   Toast,
+  ToastClose,
   ToastDescription,
   ToastProvider,
   ToastTitle,
@@ -14,11 +15,12 @@ export function Toaster() {
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
+      {toasts.map(function ({ id, title, description, action, persistent, ...props }) {
         return (
           <Toast
             key={id}
             {...props}
+            data-persistent={persistent ? "" : undefined}
             className="bg-gray-800/95 backdrop-blur-sm border-gray-600 shadow-xl"
           >
             <div className="grid gap-1">
@@ -30,6 +32,7 @@ export function Toaster() {
               )}
             </div>
             {action}
+            <ToastClose className="text-white/70 hover:text-white focus:ring-white/60" />
           </Toast>
         );
       })}

@@ -2,16 +2,18 @@
 
 import * as React from "react";
 
-import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
+import type { ToastProps } from "@/components/ui/toast";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 2000;
+const PERSISTENT_TOAST_DURATION = Number.MAX_SAFE_INTEGER;
 
 type ToasterToast = ToastProps & {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: ToastActionElement;
+  action?: React.ReactNode;
+  persistent?: boolean;
 };
 
 const actionTypes = {
@@ -154,16 +156,18 @@ function toast({ ...props }: Toast) {
       ...props,
       id,
       open: true,
+      duration: props.persistent ? PERSISTENT_TOAST_DURATION : props.duration,
       onOpenChange: (open) => {
         if (!open) dismiss();
       },
     },
   });
 
-  // Auto-dismiss after 2 seconds
-  setTimeout(() => {
-    dismiss();
-  }, TOAST_REMOVE_DELAY);
+  if (!props.persistent) {
+    setTimeout(() => {
+      dismiss();
+    }, props.duration ?? TOAST_REMOVE_DELAY);
+  }
 
   return {
     id: id,
