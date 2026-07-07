@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, memo, useMemo, useEffect } from "react";
+import { useState, useCallback, memo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import type { PlayerWithPosition } from "@/types";
 import { motion } from "framer-motion";
@@ -9,19 +9,7 @@ import {
   shareViaWhatsApp,
 } from "@/utils/teamActions";
 import { Shuffle, Copy, Send, Users, ArrowLeft } from "lucide-react";
-import { BottomNavigation } from "@/components/ui/BottomNavigation";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import {
-  DndContext,
-  DragOverlay,
-  closestCenter,
-  DragStartEvent,
-  DragEndEvent,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
 import { usePlayerSwap, type PlayerSwapData } from "@/hooks/usePlayerSwap";
 import { DraggablePlayerCard } from "./DraggablePlayerCard";
 import { useTeamStore } from "@/store/teamStore";
@@ -31,12 +19,66 @@ interface TeamsProps {
   onGoBack: () => void;
 }
 
+interface SelectedPlayer {
+  player: PlayerWithPosition;
+  team: "teamOne" | "teamTwo";
+  index: number;
+}
+
+// Defined outside Teams so its reference is always stable — prevents re-mount flash
+const TeamCard = memo(function TeamCard({
+  team,
+  teamName,
+  teamKey,
+  color,
+  animIndex,
+  selectedPlayer,
+  onPlayerTap,
+}: {
+  team: PlayerWithPosition[];
+  teamName: string;
+  teamKey: "teamOne" | "teamTwo";
+  color: string;
+  animIndex: number;
+  selectedPlayer: SelectedPlayer | null;
+  onPlayerTap: (player: PlayerWithPosition, team: "teamOne" | "teamTwo", index: number) => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: animIndex * 0.1 }}
+      className="team-card rounded-2xl p-1.5 shadow-md"
+    >
+      <div className="flex items-center justify-center gap-2 mb-1.5">
+        <div className={`w-3.5 h-3.5 rounded-full ${color}`} />
+        <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-800">{teamName}</h3>
+        <div className="flex items-center gap-1 text-gray-600">
+          <Users className="w-3.5 h-3.5" />
+          <span className="text-xs">{team.length}</span>
+        </div>
+      </div>
+      <div className="space-y-1">
+        {team.map((player, playerIndex) => (
+          <DraggablePlayerCard
+            key={`${player.name}-${playerIndex}`}
+            player={player}
+            playerIndex={playerIndex}
+            teamName={teamKey}
+            isSelected={selectedPlayer?.team === teamKey && selectedPlayer?.index === playerIndex}
+            isAnySelected={selectedPlayer !== null}
+            onClick={() => onPlayerTap(player, teamKey, playerIndex)}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+});
+
 function Teams({ onGoBack }: TeamsProps) {
   const { teamsData, redistributeTeams, updateTeams } = useTeamStore();
   const { addToast } = useAppStore();
-  const [activePlayer, setActivePlayer] = useState<PlayerWithPosition | null>(
-    null
-  );
+  const [selectedPlayer, setSelectedPlayer] = useState<SelectedPlayer | null>(null);
 
   // Get teams from store
   const teams = teamsData ? {
@@ -45,6 +87,7 @@ function Teams({ onGoBack }: TeamsProps) {
   } : { teamOne: [], teamTwo: [] };
 
   const handleRedistribute = useCallback(() => {
+    setSelectedPlayer(null);
     redistributeTeams();
     addToast({
       title: "¡Equipos redistribuidos!",
@@ -82,99 +125,53 @@ function Teams({ onGoBack }: TeamsProps) {
     [updateTeams]
   );
 
-  const { swapPlayers, canSwap, getPlayerTeamAndIndex } = usePlayerSwap({
+  const { swapPlayers, canSwap } = usePlayerSwap({
     teamOne: teams.teamOne,
     teamTwo: teams.teamTwo,
     onSwap: handleTeamSwap,
   });
 
-  // Configure sensors for better mobile support (iOS style drag activation)
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // Require 8px of movement before activating
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 500, // 500ms delay before activation (iOS style)
-        tolerance: 15, // Allow 15px of tolerance during hold
-      },
-    })
-  );
-
-  // Drag and drop handlers
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    const { active } = event;
-    const player = active.data.current?.player as PlayerWithPosition;
-    setActivePlayer(player);
-
-    // Prevent body scrolling during drag on mobile
-    document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none";
-  }, []);
-
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      setActivePlayer(null);
-
-      // Restore body scrolling after drag
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
-
-      if (!over) return;
-
-      const draggedData = active.data.current;
-      const droppedData = over.data.current;
-
-      if (!draggedData || !droppedData) return;
-
-      const draggedPlayer = draggedData.player as PlayerWithPosition;
-      const targetPlayer = droppedData.player as PlayerWithPosition;
-
-      // Don't swap with self
-      if (draggedPlayer.name === targetPlayer.name) return;
-
-      // Get player positions
-      const draggedPos = getPlayerTeamAndIndex(
-        `${draggedPlayer.name}-${draggedPlayer.position}`
-      );
-      const targetPos = getPlayerTeamAndIndex(
-        `${targetPlayer.name}-${targetPlayer.position}`
-      );
-
-      if (!draggedPos || !targetPos) return;
-
-      // Check if swap is allowed
-      if (
-        !canSwap(draggedPlayer, targetPlayer, draggedPos.team, targetPos.team)
-      )
+  // Tap-to-swap logic
+  const handlePlayerTap = useCallback(
+    (player: PlayerWithPosition, team: "teamOne" | "teamTwo", index: number) => {
+      if (!selectedPlayer) {
+        // First tap: select player
+        setSelectedPlayer({ player, team, index });
         return;
+      }
 
-      // Create swap data
+      // Tapping the same player deselects
+      if (selectedPlayer.team === team && selectedPlayer.index === index) {
+        setSelectedPlayer(null);
+        return;
+      }
+
+      // Second tap: attempt swap
+      const canDoSwap = canSwap(selectedPlayer.player, player, selectedPlayer.team, team);
+      if (!canDoSwap) {
+        addToast({
+          title: "No se puede intercambiar",
+          description: "No podés mover jugadores dentro del mismo equipo",
+          variant: "destructive",
+        });
+        setSelectedPlayer(null);
+        return;
+      }
+
       const swapData: PlayerSwapData = {
-        fromTeam: draggedPos.team,
-        toTeam: targetPos.team,
-        fromIndex: draggedPos.index,
-        toIndex: targetPos.index,
-        draggedPlayer,
-        targetPlayer,
+        fromTeam: selectedPlayer.team,
+        toTeam: team,
+        fromIndex: selectedPlayer.index,
+        toIndex: index,
+        draggedPlayer: selectedPlayer.player,
+        targetPlayer: player,
       };
 
       swapPlayers(swapData);
+      setSelectedPlayer(null);
     },
-    [canSwap, getPlayerTeamAndIndex, swapPlayers]
+    [selectedPlayer, canSwap, swapPlayers, addToast]
   );
-
-  // Cleanup effect to restore scrolling if component unmounts during drag
-  useEffect(() => {
-    return () => {
-      // Restore scrolling on cleanup
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
-    };
-  }, []);
 
   // Keyboard shortcuts for teams
   useKeyboardShortcuts([
@@ -193,178 +190,123 @@ function Teams({ onGoBack }: TeamsProps) {
       action: handleShareWhatsApp,
       description: "Compartir por WhatsApp (W)",
     },
+    {
+      key: "Escape",
+      action: () => setSelectedPlayer(null),
+      description: "Cancelar selección (Esc)",
+    },
   ]);
 
-  const TeamCard = useMemo(() => {
-    return memo(
-      ({
-        team,
-        teamName,
-        color,
-        index,
-      }: {
-        team: PlayerWithPosition[];
-        teamName: string;
-        color: string;
-        index: number;
-      }) => (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-          className="team-card rounded-2xl p-1.5 shadow-md"
-        >
-          <div className="flex items-center justify-center gap-2 mb-1.5">
-            <div className={`w-3.5 h-3.5 rounded-full ${color}`} />
-            <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-800">{teamName}</h3>
-            <div className="flex items-center gap-1 text-gray-600">
-              <Users className="w-3.5 h-3.5" />
-              <span className="text-xs">{team.length}</span>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            {team.map((player, playerIndex) => (
-              <DraggablePlayerCard
-                key={`${player.name}-${playerIndex}`}
-                player={player}
-                playerIndex={playerIndex}
-                teamName={teamName === "EQUIPO NEGRO" ? "teamOne" : "teamTwo"}
-              />
-            ))}
-          </div>
-        </motion.div>
-      )
-    );
-  }, []);
-
-  const memoizedTeams = useMemo(
-    () => (
-      <div className="grid grid-cols-2 gap-3 md:gap-6">
-        <TeamCard
-          team={teams.teamOne}
-          teamName="EQUIPO NEGRO"
-          color="bg-gray-800"
-          index={0}
-        />
-        <TeamCard
-          team={teams.teamTwo}
-          teamName="EQUIPO BLANCO"
-          color="bg-gray-300"
-          index={1}
-        />
-      </div>
-    ),
-    [teams.teamOne, teams.teamTwo]
-  );
-
-  // If no teams data, redirect back (after all hooks)
+  // Redirect if no teams data
   useEffect(() => {
     if (!teamsData) {
       onGoBack();
     }
   }, [teamsData, onGoBack]);
 
+  const teamsGrid = (
+    <div className="grid grid-cols-2 gap-3 md:gap-6">
+      <TeamCard
+        team={teams.teamOne}
+        teamName="EQUIPO NEGRO"
+        teamKey="teamOne"
+        color="bg-gray-800"
+        animIndex={0}
+        selectedPlayer={selectedPlayer}
+        onPlayerTap={handlePlayerTap}
+      />
+      <TeamCard
+        team={teams.teamTwo}
+        teamName="EQUIPO BLANCO"
+        teamKey="teamTwo"
+        color="bg-gray-300"
+        animIndex={1}
+        selectedPlayer={selectedPlayer}
+        onPlayerTap={handlePlayerTap}
+      />
+    </div>
+  );
+
   if (!teamsData) {
     return null;
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-4xl mx-auto flex flex-col flex-1 min-h-0 w-full pb-4 space-y-4"
     >
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto flex flex-col flex-1 min-h-0 w-full pb-4 space-y-4"
-      >
-        {/* Unified Header */}
-        <div className="flex-shrink-0 pb-3 border-b border-white/10 space-y-3">
-          {/* Navigation & Title row */}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={onGoBack}
-              className="text-white hover:bg-white/10 flex items-center gap-2 p-2 h-9 rounded-lg"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Volver
-            </Button>
-            <h2 className="text-base font-bold text-white">Equipos</h2>
-            <div className="text-white/60 text-xs font-semibold px-2 py-1 rounded bg-white/10">
-              Paso 3/3
-            </div>
+      {/* Unified Header */}
+      <div className="flex-shrink-0 pb-3 border-b border-white/10 space-y-3">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            onClick={onGoBack}
+            className="text-white hover:bg-white/10 flex items-center gap-2 p-2 h-9 rounded-lg"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver
+          </Button>
+          <h2 className="text-base font-bold text-white">Equipos</h2>
+          <div className="text-white/60 text-xs font-semibold px-2 py-1 rounded bg-white/10">
+            Paso 3/3
           </div>
-          <p className="text-white/60 text-xs text-center">
-            📱 Mantené presionado un jugador para arrastrarlo
-          </p>
         </div>
+        <p className="text-white/60 text-xs text-center">
+          {selectedPlayer
+            ? `✅ ${selectedPlayer.player.name.replace("🧤", "").trim()} seleccionado — tocá otro jugador para intercambiar`
+            : "👆 Tocá un jugador para intercambiarlo con otro"}
+        </p>
+      </div>
 
-        {/* Teams — Scrolls internally */}
-        <div className="flex-1 overflow-y-auto min-h-0 pr-1 py-1">
-          {memoizedTeams}
-        </div>
+      {/* Teams — No scroll, fills available space */}
+      <div className="flex-1 min-h-0">
+        {teamsGrid}
+      </div>
 
-        {/* Action buttons section — Always visible at the bottom */}
-        <div className="flex-shrink-0 space-y-3 pt-3 border-t border-white/10">
-          {/* Three columns action row */}
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCopyTeams}
-              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-1.5 text-xs font-semibold px-2"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              <span className="truncate">Copiar</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleRedistribute}
-              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-1.5 text-xs font-semibold px-2"
-            >
-              <Shuffle className="w-3.5 h-3.5" />
-              <span className="truncate">Sortear</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onGoBack}
-              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-1.5 text-xs font-semibold px-2"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="truncate">Inicio</span>
-            </Button>
-          </div>
-
-          {/* WhatsApp / Send button */}
+      {/* Action buttons — Always visible at the bottom */}
+      <div className="flex-shrink-0 space-y-3 pt-3 border-t border-white/10">
+        <div className="flex gap-2">
           <Button
             type="button"
-            onClick={handleShareWhatsApp}
-            className="w-full h-12 rounded-xl bg-green-600 hover:bg-green-700 text-white border-green-600 font-semibold flex items-center justify-center gap-2 text-base"
+            variant="outline"
+            onClick={handleCopyTeams}
+            className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-1.5 text-xs font-semibold px-2"
           >
-            <Send className="w-5 h-5" />
-            Compartir por WhatsApp
+            <Copy className="w-3.5 h-3.5" />
+            <span className="truncate">Copiar</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleRedistribute}
+            className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-1.5 text-xs font-semibold px-2"
+          >
+            <Shuffle className="w-3.5 h-3.5" />
+            <span className="truncate">Sortear</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onGoBack}
+            className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-1.5 text-xs font-semibold px-2"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span className="truncate">Inicio</span>
           </Button>
         </div>
-      </motion.div>
 
-      {/* Drag Overlay */}
-      <DragOverlay>
-        {activePlayer ? (
-          <DraggablePlayerCard
-            player={activePlayer}
-            playerIndex={0}
-            teamName="teamOne"
-            isDragOverlay={true}
-          />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+        <Button
+          type="button"
+          onClick={handleShareWhatsApp}
+          className="w-full h-12 rounded-xl bg-green-600 hover:bg-green-700 text-white border-green-600 font-semibold flex items-center justify-center gap-2 text-base"
+        >
+          <Send className="w-5 h-5" />
+          Compartir por WhatsApp
+        </Button>
+      </div>
+    </motion.div>
   );
 }
 
