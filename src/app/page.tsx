@@ -157,54 +157,55 @@ export default function Home() {
   return (
     <HydrationProvider>
       <ToastProvider>
-        <div className="min-h-screen flex flex-col items-center justify-start p-4 pt-8">
-        <div className="w-full max-w-4xl mx-auto">
-          <MotionDiv
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
-          >
-            {step === 1 && (
-              <div className="space-y-4">
-                <Image
-                  src="/logo.png"
-                  alt="Logo Equipapp"
-                  width={280}
-                  height={170}
-                  className="mx-auto"
-                  priority
-                />
-              </div>
-            )}
-
-            {step > 1 && (
-              <div className="flex items-center justify-between mb-6">
-                <Button
-                  variant="ghost"
-                  onClick={handleGoBack}
-                  className="text-white hover:bg-white/10 flex items-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Volver
-                </Button>
-                <StepIndicator currentStep={step} totalSteps={3} />
-                <div className="w-8"></div>
-              </div>
-            )}
-          </MotionDiv>
-
-          <AnimatePresence mode="wait">
+        <div className="h-dvh overflow-hidden flex flex-col items-center justify-start px-5 pt-8">
+          <div className="w-full max-w-4xl mx-auto flex flex-col flex-1 min-h-0">
             <MotionDiv
-              key={step}
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 50 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center mb-5 flex-shrink-0"
             >
-              {renderCurrentStep}
+              {step === 1 && (
+                <div className="space-y-2">
+                  <Image
+                    src="/logo.png"
+                    alt="Logo Equipapp"
+                    width={220}
+                    height={134}
+                    className="mx-auto"
+                    priority
+                  />
+                </div>
+              )}
+
+              {step > 1 && step !== 2 && step !== 3 && (
+                <div className="flex items-center justify-between mb-6">
+                  <Button
+                    variant="ghost"
+                    onClick={handleGoBack}
+                    className="text-white hover:bg-white/10 flex items-center gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Volver
+                  </Button>
+                  <StepIndicator currentStep={step} totalSteps={3} />
+                  <div className="w-8"></div>
+                </div>
+              )}
             </MotionDiv>
-          </AnimatePresence>
-        </div>
+
+            <AnimatePresence mode="wait">
+              <MotionDiv
+                key={step}
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col flex-1 min-h-0"
+              >
+                {renderCurrentStep}
+              </MotionDiv>
+            </AnimatePresence>
+          </div>
         </div>
       </ToastProvider>
     </HydrationProvider>

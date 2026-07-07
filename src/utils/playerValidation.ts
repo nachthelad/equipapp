@@ -85,4 +85,5 @@ export function parsePlayerInput(input: string): string[] {
     .split(/\r?\n/)
     .filter((line: string) => line.trim() !== "")
     .map(cleanPlayerName)
+    .filter((name: string) => name !== "")
 }

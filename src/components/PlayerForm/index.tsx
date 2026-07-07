@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { PlayerCounter } from "@/components/ui/PlayerCounter";
 import InfoDialog from "./InfoDialog";
@@ -13,12 +12,11 @@ import {
   validatePlayerCount,
   validateDuplicateNames,
 } from "@/utils/playerValidation";
-import { Users, HelpCircle, ArrowRight, Clipboard, X } from "lucide-react";
+import { HelpCircle, ArrowRight, Clipboard, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { UpdateButton } from "@/components/ui/UpdateButton";
 import { DonationButton } from "@/components/ui/DonationButton";
-import { BottomNavigation } from "@/components/ui/BottomNavigation";
 import { pasteFromClipboard } from "@/utils/teamActions";
 import { useManualUpdate } from "@/hooks/useManualUpdate";
 
@@ -40,9 +38,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   const { toast } = useToast();
   const { currentVersion } = useManualUpdate();
   const watchedPlayers = watch("players");
-  const playerCount = watchedPlayers
-    .split(/\r?\n/)
-    .filter((line) => line.trim() !== "").length;
+  const playerCount = parsePlayerInput(watchedPlayers).length;
 
   useEffect(() => {
     if (errors.players) {
@@ -55,8 +51,22 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   }, [errors.players, toast]);
 
   const onSubmit = (data: { players: string }) => {
+    const rawLines = data.players
+      .split(/\r?\n/)
+      .filter((line) => line.trim() !== "");
     const cleanedLines = parsePlayerInput(data.players);
-    
+
+    // Detect lines that became empty after cleaning (e.g. only emoji or symbols)
+    if (cleanedLines.length < rawLines.length) {
+      const diff = rawLines.length - cleanedLines.length;
+      toast({
+        title: "Nombre incompleto",
+        description: `Hay ${diff} línea${diff > 1 ? 's' : ''} con nombre inválido (solo emoji o símbolo sin nombre). Completá el nombre o eliminá la línea.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validate player count first
     const countValidation = validatePlayerCount(cleanedLines.length);
     if (!countValidation.isValid) {
@@ -123,96 +133,101 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-md mx-auto pb-20"
+      className="mx-auto w-full max-w-[430px] flex flex-col flex-1 min-h-0"
     >
-      <div className="glass rounded-2xl p-8 shadow-2xl">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-full mb-4">
-              <Users className="w-6 h-6 text-white" />
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 gap-4">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-white">
+            Ingresá los nombres
+          </h2>
+          <p className="mt-3 text-sm font-medium text-white/75">
+            Un nombre por línea
+          </p>
+        </div>
+
+        {/* Scrollable area: label + textarea */}
+        <div className="flex flex-col flex-1 min-h-0 gap-3">
+          {/* Label row */}
+          <div className="flex items-center justify-between flex-shrink-0">
+            <Label htmlFor="players" className="font-semibold text-white">
+              Lista de jugadores
+            </Label>
+            <div className="flex items-center gap-2">
+              <UpdateButton />
+              <DonationButton />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setOpenDialog(true)}
+                className="p-2 text-white/70 hover:bg-white/10 hover:text-white"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </Button>
             </div>
-            <h2 className="text-xl font-semibold text-white">
-              Ingresá los jugadores
-            </h2>
-            <p className="text-white/70 text-sm">Un nombre por línea</p>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="players" className="text-white font-medium">
-                Lista de jugadores
-              </Label>
-              <div className="flex items-center gap-1">
-                <UpdateButton />
-                <DonationButton />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setOpenDialog(true)}
-                  className="text-white/70 hover:text-white hover:bg-white/10 p-2"
-                >
-                  <HelpCircle className="w-4 h-4" />
-                </Button>
+          {/* Textarea — scrolls internally */}
+          <div className="relative flex-1 min-h-0">
+            <textarea
+              id="players"
+              className="w-full h-full resize-none rounded-xl border border-white/25 bg-white/10 p-3 text-base leading-6 text-white placeholder:text-white/40 outline-none transition-colors focus:border-white/45 focus:bg-white/15 overflow-y-auto"
+              {...register("players", {
+                required: "Ingresá al menos un jugador",
+              })}
+            />
+            {!watchedPlayers && (
+              <div className="pointer-events-none absolute left-3 top-3 select-none text-base leading-6 text-white/30">
+                <div>Juan Pérez</div>
+                <div>Diego García 🧤</div>
+                <div>Carlos López</div>
+                <div>...</div>
               </div>
-            </div>
-
-            <div className="relative">
-              <Textarea
-                id="players"
-                className="min-h-[160px] bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 focus:bg-white/15 resize-none"
-                {...register("players", {
-                  required: "Ingresá al menos un jugador",
-                })}
-              />
-              {!watchedPlayers && (
-                <div className="absolute top-3 left-3 text-white/30 pointer-events-none select-none">
-                  <div>Juan Pérez</div>
-                  <div>Diego García 🧤</div>
-                  <div>Carlos López</div>
-                  <div>...</div>
-                </div>
-              )}
-            </div>
-
-            <PlayerCounter count={playerCount} />
-          </div>
-
-        </form>
-        
-        {/* Version display at bottom center */}
-        <div className="text-center mt-6 pt-4 border-t border-white/20">
-          <div className="text-white/50 text-xs">
-            v{currentVersion}
+            )}
           </div>
         </div>
-      </div>
+
+        {/* Always-visible bottom section */}
+        <div className="flex-shrink-0 space-y-3 pb-4">
+          {/* Pegar / Vaciar buttons */}
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePaste}
+              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-2 text-sm font-medium"
+            >
+              <Clipboard className="w-4 h-4" />
+              Pegar
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClear}
+              disabled={playerCount === 0}
+              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 disabled:opacity-40 flex items-center justify-center gap-2 text-sm font-medium"
+            >
+              <X className="w-4 h-4" />
+              Vaciar
+            </Button>
+          </div>
+
+          {/* Info row: jugadores · versión · estado */}
+          <PlayerCounter count={playerCount} version={currentVersion} />
+
+          {/* Armar equipos */}
+          <Button
+            type="submit"
+            disabled={playerCount === 0}
+            className="w-full h-12 rounded-xl bg-white text-purple-700 font-semibold hover:bg-white/90 disabled:opacity-40 flex items-center justify-center gap-2 text-base"
+          >
+            <ArrowRight className="w-5 h-5" />
+            Armar equipos
+          </Button>
+        </div>
+      </form>
 
       <InfoDialog open={openDialog} handleClose={() => setOpenDialog(false)} />
-      
-      <BottomNavigation
-        leftButton={{
-          icon: <Clipboard className="w-4 h-4" />,
-          label: "Pegar",
-          action: handlePaste,
-        }}
-        centerButton={{
-          icon: <ArrowRight className="w-4 h-4" />,
-          label: "Crear equipos",
-          action: () => {
-            if (playerCount > 0) {
-              handleSubmit(onSubmit)();
-            }
-          },
-          disabled: playerCount === 0,
-        }}
-        rightButton={{
-          icon: <X className="w-4 h-4" />,
-          label: "Limpiar",
-          action: handleClear,
-          disabled: playerCount === 0,
-        }}
-      />
     </motion.div>
   );
 }
