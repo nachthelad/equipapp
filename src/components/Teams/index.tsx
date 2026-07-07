@@ -212,18 +212,18 @@ function Teams({ onGoBack }: TeamsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
-          className="team-card rounded-2xl p-3 shadow-xl"
+          className="team-card rounded-2xl p-1.5 shadow-md"
         >
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className={`w-4 h-4 rounded-full ${color}`} />
-            <h3 className="text-xl font-bold text-gray-800">{teamName}</h3>
+          <div className="flex items-center justify-center gap-2 mb-1.5">
+            <div className={`w-3.5 h-3.5 rounded-full ${color}`} />
+            <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-800">{teamName}</h3>
             <div className="flex items-center gap-1 text-gray-600">
-              <Users className="w-4 h-4" />
-              <span className="text-sm">{team.length}</span>
+              <Users className="w-3.5 h-3.5" />
+              <span className="text-xs">{team.length}</span>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             {team.map((player, playerIndex) => (
               <DraggablePlayerCard
                 key={`${player.name}-${playerIndex}`}
@@ -310,36 +310,34 @@ function Teams({ onGoBack }: TeamsProps) {
 
         {/* Action buttons section — Always visible at the bottom */}
         <div className="flex-shrink-0 space-y-3 pt-3 border-t border-white/10">
-          {/* Back/Create New button */}
-          <div className="text-center">
-            <Button
-              onClick={onGoBack}
-              variant="ghost"
-              className="text-white/70 hover:text-white hover:bg-white/10 h-9 text-xs"
-            >
-              Crear nuevos equipos
-            </Button>
-          </div>
-
-          {/* Copy and Shuffle row */}
-          <div className="flex gap-3">
+          {/* Three columns action row */}
+          <div className="flex gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={handleCopyTeams}
-              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-2 text-sm font-medium"
+              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-1.5 text-xs font-semibold px-2"
             >
-              <Copy className="w-4 h-4" />
-              Copiar equipos
+              <Copy className="w-3.5 h-3.5" />
+              <span className="truncate">Copiar</span>
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={handleRedistribute}
-              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-2 text-sm font-medium"
+              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-1.5 text-xs font-semibold px-2"
             >
-              <Shuffle className="w-4 h-4" />
-              Volver a sortear
+              <Shuffle className="w-3.5 h-3.5" />
+              <span className="truncate">Sortear</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onGoBack}
+              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-1.5 text-xs font-semibold px-2"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="truncate">Inicio</span>
             </Button>
           </div>
 
