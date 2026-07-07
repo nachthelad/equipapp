@@ -177,7 +177,7 @@ export default function Home() {
                 </div>
               )}
 
-              {step > 1 && (
+              {step > 1 && step !== 2 && step !== 3 && (
                 <div className="flex items-center justify-between mb-6">
                   <Button
                     variant="ghost"

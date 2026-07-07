@@ -3,7 +3,7 @@ import { memo } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import type { PlayerWithPosition } from "@/types";
 import { motion } from "framer-motion";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Shield, Target, Zap, CircleDot } from "lucide-react";
 
 interface DraggablePlayerCardProps {
   player: PlayerWithPosition;
@@ -12,6 +12,14 @@ interface DraggablePlayerCardProps {
   isDragOverlay?: boolean;
   className?: string;
 }
+
+const positionIcons: Record<string, React.ReactElement> = {
+  Arco: <CircleDot className="w-3.5 h-3.5" />,
+  Def: <Shield className="w-3.5 h-3.5" />,
+  Medio: <Target className="w-3.5 h-3.5" />,
+  Del: <Zap className="w-3.5 h-3.5" />,
+  Jugador: <Shield className="w-3.5 h-3.5" />,
+};
 
 export const DraggablePlayerCard = memo(function DraggablePlayerCard({
   player,
@@ -78,7 +86,7 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
       transition={{ delay: playerIndex * 0.05 }}
       className={`
         group relative flex items-center justify-between p-2 md:p-3 rounded-lg 
-        transition-all duration-200 cursor-move touch-manipulation w-full
+        transition-all duration-200 cursor-move touch-manipulation w-full select-none
         ${
           isOver && !isDragging
             ? "bg-blue-50 border-2 border-blue-300 border-dashed"
@@ -94,12 +102,6 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
       `}
       {...attributes}
       {...listeners}
-      onTouchStart={(e) => {
-        // Prevent scrolling when starting a drag on mobile
-        if (listeners?.onTouchStart) {
-          e.preventDefault();
-        }
-      }}
     >
       {/* Drag handle */}
       <div className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 touch:opacity-100 transition-opacity duration-200 mr-2">
@@ -114,11 +116,12 @@ export const DraggablePlayerCard = memo(function DraggablePlayerCard({
 
         {player.position !== "Jugador" && (
           <span
-            className={`px-2 py-1 rounded-full text-xs font-medium border ${
+            className={`p-1.5 rounded-full border flex items-center justify-center ${
               positionColors[player.position]
             }`}
+            title={player.position}
           >
-            {player.position}
+            {positionIcons[player.position]}
           </span>
         )}
       </div>

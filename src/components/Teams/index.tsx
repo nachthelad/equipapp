@@ -8,7 +8,7 @@ import {
   copyToClipboard,
   shareViaWhatsApp,
 } from "@/utils/teamActions";
-import { Shuffle, Copy, Send, Users } from "lucide-react";
+import { Shuffle, Copy, Send, Users, ArrowLeft } from "lucide-react";
 import { BottomNavigation } from "@/components/ui/BottomNavigation";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import {
@@ -88,7 +88,7 @@ function Teams({ onGoBack }: TeamsProps) {
     onSwap: handleTeamSwap,
   });
 
-  // Configure sensors for better mobile support
+  // Configure sensors for better mobile support (iOS style drag activation)
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -97,8 +97,8 @@ function Teams({ onGoBack }: TeamsProps) {
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 200, // 200ms delay before activation
-        tolerance: 8, // Allow 8px of tolerance during delay
+        delay: 500, // 500ms delay before activation (iOS style)
+        tolerance: 15, // Allow 15px of tolerance during hold
       },
     })
   );
@@ -279,41 +279,78 @@ function Teams({ onGoBack }: TeamsProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto space-y-6 pb-20"
+        className="max-w-4xl mx-auto flex flex-col flex-1 min-h-0 w-full pb-4 space-y-4"
       >
-        {/* Header */}
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-2">
-            ¡Equipos listos!
-          </h2>
-          <p className="text-white/60 text-sm text-center max-w-md mx-auto">
+        {/* Unified Header */}
+        <div className="flex-shrink-0 pb-3 border-b border-white/10 space-y-3">
+          {/* Navigation & Title row */}
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              onClick={onGoBack}
+              className="text-white hover:bg-white/10 flex items-center gap-2 p-2 h-9 rounded-lg"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Volver
+            </Button>
+            <h2 className="text-base font-bold text-white">Equipos</h2>
+            <div className="text-white/60 text-xs font-semibold px-2 py-1 rounded bg-white/10">
+              Paso 3/3
+            </div>
+          </div>
+          <p className="text-white/60 text-xs text-center">
             📱 Mantené presionado un jugador para arrastrarlo
-            {teams.teamOne.length === 8 && teams.teamTwo.length === 8 ? (
-              <span className="block">
-                • Entre equipos: intercambia equipos y posiciones
-              </span>
-            ) : null}
-            {teams.teamOne.length === 8 && teams.teamTwo.length === 8 ? (
-              <span className="block">
-                • Mismo equipo: intercambia solo posiciones
-              </span>
-            ) : (
-              <span className="block">• Solo entre equipos diferentes</span>
-            )}
           </p>
         </div>
 
-        {/* Teams */}
-        {memoizedTeams}
+        {/* Teams — Scrolls internally */}
+        <div className="flex-1 overflow-y-auto min-h-0 pr-1 py-1">
+          {memoizedTeams}
+        </div>
 
-        {/* Back button */}
-        <div className="text-center pt-4">
+        {/* Action buttons section — Always visible at the bottom */}
+        <div className="flex-shrink-0 space-y-3 pt-3 border-t border-white/10">
+          {/* Back/Create New button */}
+          <div className="text-center">
+            <Button
+              onClick={onGoBack}
+              variant="ghost"
+              className="text-white/70 hover:text-white hover:bg-white/10 h-9 text-xs"
+            >
+              Crear nuevos equipos
+            </Button>
+          </div>
+
+          {/* Copy and Shuffle row */}
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCopyTeams}
+              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-2 text-sm font-medium"
+            >
+              <Copy className="w-4 h-4" />
+              Copiar equipos
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleRedistribute}
+              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-2 text-sm font-medium"
+            >
+              <Shuffle className="w-4 h-4" />
+              Volver a sortear
+            </Button>
+          </div>
+
+          {/* WhatsApp / Send button */}
           <Button
-            onClick={onGoBack}
-            variant="ghost"
-            className="text-white/70 hover:text-white hover:bg-white/10"
+            type="button"
+            onClick={handleShareWhatsApp}
+            className="w-full h-12 rounded-xl bg-green-600 hover:bg-green-700 text-white border-green-600 font-semibold flex items-center justify-center gap-2 text-base"
           >
-            Crear nuevos equipos
+            <Send className="w-5 h-5" />
+            Compartir por WhatsApp
           </Button>
         </div>
       </motion.div>
@@ -329,26 +366,6 @@ function Teams({ onGoBack }: TeamsProps) {
           />
         ) : null}
       </DragOverlay>
-
-      <BottomNavigation
-        leftButton={{
-          icon: <Copy className="w-4 h-4" />,
-          label: "Copiar",
-          action: handleCopyTeams,
-        }}
-        centerButton={{
-          icon: <Shuffle className="w-4 h-4" />,
-          label: "Volver a sortear",
-          action: handleRedistribute,
-        }}
-        rightButton={{
-          icon: <Send className="w-4 h-4" />,
-          label: "WhatsApp",
-          action: handleShareWhatsApp,
-          className:
-            "bg-green-600 hover:bg-green-700 text-white border-green-600",
-        }}
-      />
     </DndContext>
   );
 }

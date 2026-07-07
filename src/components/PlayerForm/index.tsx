@@ -38,9 +38,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   const { toast } = useToast();
   const { currentVersion } = useManualUpdate();
   const watchedPlayers = watch("players");
-  const playerCount = watchedPlayers
-    .split(/\r?\n/)
-    .filter((line) => line.trim() !== "").length;
+  const playerCount = parsePlayerInput(watchedPlayers).length;
 
   useEffect(() => {
     if (errors.players) {
@@ -53,7 +51,21 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   }, [errors.players, toast]);
 
   const onSubmit = (data: { players: string }) => {
+    const rawLines = data.players
+      .split(/\r?\n/)
+      .filter((line) => line.trim() !== "");
     const cleanedLines = parsePlayerInput(data.players);
+
+    // Detect lines that became empty after cleaning (e.g. only emoji or symbols)
+    if (cleanedLines.length < rawLines.length) {
+      const diff = rawLines.length - cleanedLines.length;
+      toast({
+        title: "Nombre incompleto",
+        description: `Hay ${diff} línea${diff > 1 ? 's' : ''} con nombre inválido (solo emoji o símbolo sin nombre). Completá el nombre o eliminá la línea.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Validate player count first
     const countValidation = validatePlayerCount(cleanedLines.length);
