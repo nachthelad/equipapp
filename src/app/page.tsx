@@ -16,6 +16,7 @@ import { PositionSelectionSkeleton } from "@/components/ui/PositionSelectionSkel
 import { StepIndicator } from "@/components/ui/StepIndicator";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AppDownloadBanner } from "@/components/ui/AppDownloadBanner";
 
 const MotionDiv = motion.div;
 
@@ -166,6 +167,7 @@ export default function Home() {
             >
               {step === 1 && (
                 <div className="space-y-2">
+                  <AppDownloadBanner />
                   <Image
                     src="/logo.png"
                     alt="Logo Equipapp"
