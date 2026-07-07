@@ -157,20 +157,20 @@ export default function Home() {
   return (
     <HydrationProvider>
       <ToastProvider>
-        <div className="min-h-screen flex flex-col items-center justify-start p-4 pt-8">
+        <div className="min-h-screen flex flex-col items-center justify-start px-5 pb-24 pt-8">
         <div className="w-full max-w-4xl mx-auto">
           <MotionDiv
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
+            className="text-center mb-5"
           >
             {step === 1 && (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <Image
                   src="/logo.png"
                   alt="Logo Equipapp"
-                  width={280}
-                  height={170}
+                  width={220}
+                  height={134}
                   className="mx-auto"
                   priority
                 />

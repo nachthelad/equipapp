@@ -1,9 +1,10 @@
 interface PlayerCounterProps {
   count: number
+  version?: string
   className?: string
 }
 
-export function PlayerCounter({ count, className = "" }: PlayerCounterProps) {
+export function PlayerCounter({ count, version, className = "" }: PlayerCounterProps) {
   const getStatusColor = () => {
     if ([8, 10, 14, 16].includes(count)) return "text-green-300"
     if (count > 0) return "text-yellow-300"
@@ -17,9 +18,14 @@ export function PlayerCounter({ count, className = "" }: PlayerCounterProps) {
   }
 
   return (
-    <div className={`flex items-center justify-between text-sm ${className}`}>
+    <div className={`grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-sm ${className}`}>
       <span className="text-white/70">Jugadores: {count}</span>
-      <span className={`font-medium ${getStatusColor()}`}>{getStatusMessage()}</span>
+      {version ? (
+        <span className="text-center text-xs text-white/45">v{version}</span>
+      ) : (
+        <span />
+      )}
+      <span className={`text-right font-medium ${getStatusColor()}`}>{getStatusMessage()}</span>
     </div>
   )
 }
