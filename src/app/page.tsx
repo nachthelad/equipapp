@@ -1,7 +1,7 @@
 "use client";
 import { lazy, Suspense, useCallback, useMemo } from "react";
-import nextDynamic from "next/dynamic";
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import type { TeamsData } from "@/types";
 import { useNavigation } from "@/hooks/useNavigation";
 import { useTeamGeneration } from "@/hooks/useTeamGeneration";
@@ -17,8 +17,7 @@ import { StepIndicator } from "@/components/ui/StepIndicator";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const MotionDiv = nextDynamic(() => import("framer-motion").then(mod => mod.motion.div), { ssr: false });
-const AnimatePresence = nextDynamic(() => import("framer-motion").then(mod => mod.AnimatePresence), { ssr: false });
+const MotionDiv = motion.div;
 
 // Lazy loading de componentes
 const PlayerForm = lazy(() => import("@/components/PlayerForm"));
