@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { PlayerCounter } from "@/components/ui/PlayerCounter";
 import InfoDialog from "./InfoDialog";
@@ -18,7 +17,6 @@ import { motion } from "framer-motion";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { UpdateButton } from "@/components/ui/UpdateButton";
 import { DonationButton } from "@/components/ui/DonationButton";
-import { BottomNavigation } from "@/components/ui/BottomNavigation";
 import { pasteFromClipboard } from "@/utils/teamActions";
 import { useManualUpdate } from "@/hooks/useManualUpdate";
 
@@ -56,7 +54,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
 
   const onSubmit = (data: { players: string }) => {
     const cleanedLines = parsePlayerInput(data.players);
-    
+
     // Validate player count first
     const countValidation = validatePlayerCount(cleanedLines.length);
     if (!countValidation.isValid) {
@@ -123,9 +121,9 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-auto w-full max-w-[430px] pb-20"
+      className="mx-auto w-full max-w-[430px] flex flex-col flex-1 min-h-0"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 gap-4">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-white">
             Ingresá los nombres
@@ -135,8 +133,10 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
           </p>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
+        {/* Scrollable area: label + textarea */}
+        <div className="flex flex-col flex-1 min-h-0 gap-3">
+          {/* Label row */}
+          <div className="flex items-center justify-between flex-shrink-0">
             <Label htmlFor="players" className="font-semibold text-white">
               Lista de jugadores
             </Label>
@@ -155,10 +155,11 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
             </div>
           </div>
 
-          <div className="relative">
-            <Textarea
+          {/* Textarea — scrolls internally */}
+          <div className="relative flex-1 min-h-0">
+            <textarea
               id="players"
-              className="min-h-[190px] resize-none rounded-xl border-white/25 bg-white/10 p-3 text-base leading-6 text-white placeholder:text-white/40 focus:border-white/45 focus:bg-white/15"
+              className="w-full h-full resize-none rounded-xl border border-white/25 bg-white/10 p-3 text-base leading-6 text-white placeholder:text-white/40 outline-none transition-colors focus:border-white/45 focus:bg-white/15 overflow-y-auto"
               {...register("players", {
                 required: "Ingresá al menos un jugador",
               })}
@@ -172,37 +173,49 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
               </div>
             )}
           </div>
-
-          <PlayerCounter count={playerCount} version={currentVersion} />
         </div>
 
+        {/* Always-visible bottom section */}
+        <div className="flex-shrink-0 space-y-3 pb-4">
+          {/* Pegar / Vaciar buttons */}
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePaste}
+              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center justify-center gap-2 text-sm font-medium"
+            >
+              <Clipboard className="w-4 h-4" />
+              Pegar
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClear}
+              disabled={playerCount === 0}
+              className="flex-1 h-11 rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 disabled:opacity-40 flex items-center justify-center gap-2 text-sm font-medium"
+            >
+              <X className="w-4 h-4" />
+              Vaciar
+            </Button>
+          </div>
+
+          {/* Info row: jugadores · versión · estado */}
+          <PlayerCounter count={playerCount} version={currentVersion} />
+
+          {/* Armar equipos */}
+          <Button
+            type="submit"
+            disabled={playerCount === 0}
+            className="w-full h-12 rounded-xl bg-white text-purple-700 font-semibold hover:bg-white/90 disabled:opacity-40 flex items-center justify-center gap-2 text-base"
+          >
+            <ArrowRight className="w-5 h-5" />
+            Armar equipos
+          </Button>
+        </div>
       </form>
 
       <InfoDialog open={openDialog} handleClose={() => setOpenDialog(false)} />
-      
-      <BottomNavigation
-        leftButton={{
-          icon: <Clipboard className="w-4 h-4" />,
-          label: "Pegar",
-          action: handlePaste,
-        }}
-        centerButton={{
-          icon: <ArrowRight className="w-4 h-4" />,
-          label: "Crear equipos",
-          action: () => {
-            if (playerCount > 0) {
-              handleSubmit(onSubmit)();
-            }
-          },
-          disabled: playerCount === 0,
-        }}
-        rightButton={{
-          icon: <X className="w-4 h-4" />,
-          label: "Limpiar",
-          action: handleClear,
-          disabled: playerCount === 0,
-        }}
-      />
     </motion.div>
   );
 }
