@@ -50,11 +50,11 @@ const TeamCard = memo(function TeamCard({
       transition={{ delay: animIndex * 0.1 }}
       className="team-card rounded-2xl p-1.5 shadow-md"
     >
-      <div className="flex items-center justify-center gap-2 mb-1.5">
-        <div className={`w-3.5 h-3.5 rounded-full ${color}`} />
-        <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-800">{teamName}</h3>
+      <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1.5">
+        <div className={`w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full ${color}`} />
+        <h3 className="whitespace-nowrap text-[11px] sm:text-base md:text-lg font-bold text-gray-800">{teamName}</h3>
         <div className="flex items-center gap-1 text-gray-600">
-          <Users className="w-3.5 h-3.5" />
+          <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           <span className="text-xs">{team.length}</span>
         </div>
       </div>
