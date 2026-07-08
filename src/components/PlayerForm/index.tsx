@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PlayerCounter } from "@/components/ui/PlayerCounter";
@@ -25,7 +25,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
     register,
     handleSubmit,
     setError,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm({
@@ -37,7 +37,7 @@ export default function PlayerForm({ onFormSubmit }: PlayerFormProps) {
   const [openDialog, setOpenDialog] = useState(false);
   const { toast } = useToast();
   const { currentVersion } = useManualUpdate();
-  const watchedPlayers = watch("players");
+  const watchedPlayers = useWatch({ control, name: "players" });
   const playerCount = parsePlayerInput(watchedPlayers).length;
 
   useEffect(() => {

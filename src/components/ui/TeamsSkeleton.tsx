@@ -1,21 +1,23 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function TeamsSkeleton() {
-  const PlayerSkeleton = () => (
+function PlayerSkeleton() {
+  return (
     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
       <Skeleton className="h-4 w-32" />
       <Skeleton className="h-6 w-12 rounded-full" />
     </div>
   );
+}
 
-  const TeamSkeleton = () => (
+function TeamSkeleton() {
+  return (
     <div className="team-card rounded-2xl p-6 shadow-xl">
       <div className="flex items-center justify-center gap-3 mb-4">
         <Skeleton className="w-4 h-4 rounded-full" />
         <Skeleton className="h-6 w-32" />
         <Skeleton className="h-4 w-8" />
       </div>
-      
+
       <div className="space-y-2">
         {Array.from({ length: 8 }).map((_, i) => (
           <PlayerSkeleton key={i} />
@@ -23,7 +25,9 @@ export function TeamsSkeleton() {
       </div>
     </div>
   );
+}
 
+export function TeamsSkeleton() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}

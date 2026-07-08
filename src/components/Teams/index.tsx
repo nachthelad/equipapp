@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, memo, useEffect } from "react";
+import { useState, useCallback, memo, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import type { PlayerWithPosition } from "@/types";
 import { motion } from "framer-motion";
@@ -81,10 +81,16 @@ function Teams({ onGoBack }: TeamsProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<SelectedPlayer | null>(null);
 
   // Get teams from store
-  const teams = teamsData ? {
-    teamOne: teamsData.teamOne,
-    teamTwo: teamsData.teamTwo,
-  } : { teamOne: [], teamTwo: [] };
+  const teams = useMemo(
+    () =>
+      teamsData
+        ? {
+            teamOne: teamsData.teamOne,
+            teamTwo: teamsData.teamTwo,
+          }
+        : { teamOne: [], teamTwo: [] },
+    [teamsData]
+  );
 
   const handleRedistribute = useCallback(() => {
     setSelectedPlayer(null);
