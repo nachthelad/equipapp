@@ -1,7 +1,17 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { PlayerWithPosition, TeamsData } from '@/types'
-import { shuffle } from 'lodash'
+
+function shufflePlayers<T>(players: T[]): T[] {
+  const shuffled = [...players]
+
+  for (let index = shuffled.length - 1; index > 0; index--) {
+    const swapIndex = Math.floor(Math.random() * (index + 1))
+    ;[shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]]
+  }
+
+  return shuffled
+}
 
 interface TeamState {
   // State
@@ -69,7 +79,7 @@ export const useTeamStore = create<TeamState>()(
           if (!teamsData) return
 
           const allPlayers = [...teamsData.teamOne, ...teamsData.teamTwo]
-          const shuffledPlayers = shuffle([...allPlayers])
+          const shuffledPlayers = shufflePlayers(allPlayers)
 
           const grouped: Record<string, PlayerWithPosition[]> = {
             Arco: [],
