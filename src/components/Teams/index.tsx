@@ -241,10 +241,10 @@ function Teams({ onGoBack }: TeamsProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl mx-auto flex flex-col flex-1 min-h-0 w-full pb-4 space-y-4"
+      className="max-w-4xl mx-auto flex flex-col flex-1 min-h-0 w-full gap-3 pb-4 max-[700px]:gap-2"
     >
       {/* Unified Header */}
-      <div className="flex-shrink-0 pb-3 border-b border-white/10 space-y-3">
+      <div className="flex-shrink-0 border-b border-white/10 pb-3 space-y-3 max-[700px]:pb-2 max-[700px]:space-y-2">
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
@@ -266,13 +266,13 @@ function Teams({ onGoBack }: TeamsProps) {
         </p>
       </div>
 
-      {/* Teams — No scroll, fills available space */}
-      <div className="flex-1 min-h-0">
+      {/* Teams scroll inside the available space so actions stay visible on short screens. */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 pb-1">
         {teamsGrid}
       </div>
 
       {/* Action buttons — Always visible at the bottom */}
-      <div className="flex-shrink-0 space-y-3 pt-3 border-t border-white/10">
+      <div className="flex-shrink-0 space-y-3 border-t border-white/10 pt-3 max-[700px]:space-y-2 max-[700px]:pt-2">
         <div className="flex gap-2">
           <Button
             type="button"
